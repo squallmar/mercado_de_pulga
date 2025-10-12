@@ -1,0 +1,182 @@
+import { NextRequest, NextResponse } from 'next/server';
+import pool from '@/lib/database';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const condition = searchParams.get('condition');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    const search = searchParams.get('search');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12');
+    const offset = (page - 1) * limit;
+
+    let query = `
+      SELECT p.*, u.name as seller_name, u.rating as seller_rating, c.name as category_name
+      FROM products p
+      JOIN users u ON p.seller_id = u.id
+      JOIN categories c ON p.category_id = c.id
+      WHERE p.status = 'disponivel'
+    `;
+    
+    const params: (string | number)[] = [];
+    let paramCount = 0;
+
+    if (category) {
+      paramCount++;
+      query += ` AND p.category_id = $${paramCount}`;
+      params.push(category);
+    }
+
+    if (condition) {
+      paramCount++;
+      query += ` AND p.condition = $${paramCount}`;
+      params.push(condition);
+    }
+
+    if (minPrice) {
+      paramCount++;
+      query += ` AND p.price >= $${paramCount}`;
+      params.push(parseFloat(minPrice));
+    }
+
+    if (maxPrice) {
+      paramCount++;
+      query += ` AND p.price <= $${paramCount}`;
+      params.push(parseFloat(maxPrice));
+    }
+
+    if (search) {
+      paramCount++;
+      query += ` AND (p.title ILIKE $${paramCount} OR p.description ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+    }
+
+    query += ` ORDER BY p.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    params.push(limit, offset);
+
+    const client = await pool.connect();
+    const result = await client.query(query, params);
+    
+    // Get total count for pagination
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM products p
+      WHERE p.status = 'disponivel'
+    `;
+    const countParams: (string | number)[] = [];
+    let countParamCount = 0;
+
+    if (category) {
+      countParamCount++;
+      countQuery += ` AND p.category_id = $${countParamCount}`;
+      countParams.push(category);
+    }
+
+    if (condition) {
+      countParamCount++;
+      countQuery += ` AND p.condition = $${countParamCount}`;
+      countParams.push(condition);
+    }
+
+    if (minPrice) {
+      countParamCount++;
+      countQuery += ` AND p.price >= $${countParamCount}`;
+      countParams.push(parseFloat(minPrice));
+    }
+
+    if (maxPrice) {
+      countParamCount++;
+      countQuery += ` AND p.price <= $${countParamCount}`;
+      countParams.push(parseFloat(maxPrice));
+    }
+
+    if (search) {
+      countParamCount++;
+      countQuery += ` AND (p.title ILIKE $${countParamCount} OR p.description ILIKE $${countParamCount})`;
+      countParams.push(`%${search}%`);
+    }
+
+    const countResult = await client.query(countQuery, countParams);
+    client.release();
+
+    const products = result.rows;
+    const total = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
+
+    return NextResponse.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao buscar produtos:', error);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      title,
+      description,
+      price,
+      condition,
+      category_id,
+      seller_id,
+      images,
+      location,
+      tags
+    } = body;
+
+    // Validação básica
+    if (!title || !description || !price || !condition || !category_id || !seller_id) {
+      return NextResponse.json(
+        { error: 'Campos obrigatórios não preenchidos' },
+        { status: 400 }
+      );
+    }
+
+    const client = await pool.connect();
+    
+    const query = `
+      INSERT INTO products (title, description, price, condition, category_id, seller_id, images, location, tags, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'disponivel')
+      RETURNING *
+    `;
+    
+    const result = await client.query(query, [
+      title,
+      description,
+      price,
+      condition,
+      category_id,
+      seller_id,
+      JSON.stringify(images || []),
+      location,
+      JSON.stringify(tags || [])
+    ]);
+    
+    client.release();
+
+    return NextResponse.json(result.rows[0], { status: 201 });
+  } catch (error) {
+    console.error('Erro ao criar produto:', error);
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
+  }
+}

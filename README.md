@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mercado de Pulga
 
-## Getting Started
+Marketplace de segunda mão brasileiro, inspirado no Enjoei. Conectamos pessoas que querem vender itens usados com compradores interessados.
 
-First, run the development server:
+## Stack Tecnológica
+
+- **Frontend**: Next.js 15, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Banco de Dados**: PostgreSQL
+- **Autenticação**: NextAuth.js
+- **Upload de Imagens**: Cloudinary
+- **Pagamentos**: Stripe (futuro)
+
+## Funcionalidades Principais
+
+### Usuários
+- [x] Cadastro e login de usuários
+- [x] Perfis de vendedor e comprador
+- [x] Sistema de autenticação com NextAuth.js
+- [ ] Verificação de identidade
+- [ ] Sistema de avaliações
+
+### Produtos
+- [x] API de produtos com filtros avançados
+- [x] Catálogo de produtos com paginação
+- [x] Sistema de categorias
+- [x] Busca por texto, preço e condição
+- [x] Componentes de listagem e visualização
+- [ ] Upload múltiplo de imagens
+- [ ] Sistema de favoritos funcionais
+
+### Interface
+- [x] Página inicial com navegação
+- [x] Páginas de login e registro
+- [x] Catálogo de produtos com filtros
+- [x] Componentes de busca e paginação
+- [x] Navegação responsiva com autenticação
+- [x] Sistema de categorias funcionais
+
+### Transações
+- [ ] Sistema de ofertas
+- [ ] Chat entre comprador/vendedor
+- [ ] Integração com pagamentos
+- [ ] Histórico de compras/vendas
+
+### Administração
+- [ ] Painel admin
+- [ ] Moderação de produtos
+- [ ] Relatórios de vendas
+- [ ] Gestão de usuários
+
+## Como executar
 
 ```bash
+# Instalar dependências
+npm install
+
+# Configurar banco de dados PostgreSQL
+# 1. Certifique-se que o PostgreSQL está rodando
+# 2. Configure as variáveis de ambiente no .env.local
+# 3. O banco e tabelas serão criados automaticamente
+
+# Executar em desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse http://localhost:3002
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Status do Desenvolvimento
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+✅ **Concluído:**
+- Sistema completo de autenticação (login/registro)
+- Banco de dados PostgreSQL configurado
+- API de produtos com filtros avançados
+- Catálogo de produtos com paginação
+- Sistema de categorias funcionais
+- Interface responsiva com navegação
+- Componentes de busca e filtros
 
-## Learn More
+🚧 **Em desenvolvimento:**
+- Upload de imagens para produtos
+- Sistema de chat entre usuários
+- Integração de pagamentos
+- Sistema de favoritos
+- Painel administrativo
 
-To learn more about Next.js, take a look at the following resources:
+## Próximos passos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. ✅ ~~Configurar PostgreSQL~~
+2. ✅ ~~Implementar autenticação~~
+3. ✅ ~~Criar modelos de dados~~
+4. ✅ ~~Desenvolver catálogo de produtos~~
+5. 🔄 Implementar upload de imagens
+6. 🔄 Sistema de ofertas e chat
+7. 🔄 Integração com pagamentos
