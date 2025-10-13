@@ -2,15 +2,36 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Navigation() {
   const { data: session, status } = useSession();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Separate states for desktop user dropdown and mobile menu
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Refs to detect outside clicks
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' });
   };
+
+  // Close menus on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (isUserMenuOpen && userMenuRef.current && !userMenuRef.current.contains(target)) {
+        setIsUserMenuOpen(false);
+      }
+      if (isMobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserMenuOpen, isMobileMenuOpen]);
 
   return (
     <nav className="sticky top-0 z-50" style={{ 
@@ -76,9 +97,9 @@ export default function Navigation() {
                   Vender
                 </Link>
                 
-                <div className="relative">
+                <div className="relative" ref={userMenuRef}>
                   <button 
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                       className="flex items-center space-x-2 transition-colors hover:scale-105"
                       style={{ color: '#6B4C57' }}
                   >
@@ -92,7 +113,7 @@ export default function Navigation() {
                     </svg>
                   </button>
 
-                  {isMenuOpen && (
+                  {isUserMenuOpen && (
                       <div className="absolute right-0 mt-2 w-64 vintage-card py-1 z-50">
                         <div className="px-4 py-2 text-sm border-b space-y-0.5" style={{ borderColor: '#E8DCC6', color: '#3C3C3C' }}>
                           <div
@@ -113,7 +134,7 @@ export default function Navigation() {
                       <Link 
                         href="/profile" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsUserMenuOpen(false)}
                       >
                         Meu Perfil
                       </Link>
@@ -121,7 +142,7 @@ export default function Navigation() {
                       <Link 
                         href="/my-products" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsUserMenuOpen(false)}
                       >
                         Meus Produtos
                       </Link>
@@ -129,7 +150,7 @@ export default function Navigation() {
                       <Link 
                         href="/favorites" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsUserMenuOpen(false)}
                       >
                         Favoritos
                       </Link>
@@ -137,7 +158,7 @@ export default function Navigation() {
                       <Link 
                         href="/messages" 
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsUserMenuOpen(false)}
                       >
                         Mensagens
                       </Link>
@@ -174,7 +195,7 @@ export default function Navigation() {
           {/* Menu mobile */}
           <div className="md:hidden">
             <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="transition-colors"
               style={{ color: '#6B4C57' }}
             >
@@ -186,14 +207,14 @@ export default function Navigation() {
         </div>
 
         {/* Menu mobile expandido */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4" style={{ borderTop: '1px solid #E8DCC6' }}>
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4" style={{ borderTop: '1px solid #E8DCC6' }} ref={mobileMenuRef}>
             <div className="space-y-2">
               <Link 
                 href="/products" 
                 className="block px-4 py-2 rounded font-vintage-body"
                 style={{ color: '#6B4C57' }}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Explorar Produtos
               </Link>
@@ -202,7 +223,7 @@ export default function Navigation() {
                 href="/categories" 
                 className="block px-4 py-2 rounded font-vintage-body"
                 style={{ color: '#6B4C57' }}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Categorias
               </Link>
@@ -212,7 +233,7 @@ export default function Navigation() {
                   <Link 
                     href="/sell" 
                     className="block px-4 py-2 vintage-button rounded mx-4 text-center"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Vender Produto
                   </Link>
@@ -226,7 +247,7 @@ export default function Navigation() {
                       href="/profile" 
                       className="block px-4 py-2 rounded font-vintage-body"
                       style={{ color: '#6B4C57' }}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Meu Perfil
                     </Link>
@@ -235,7 +256,7 @@ export default function Navigation() {
                       href="/my-products" 
                       className="block px-4 py-2 rounded font-vintage-body"
                       style={{ color: '#6B4C57' }}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Meus Produtos
                     </Link>
@@ -255,14 +276,14 @@ export default function Navigation() {
                     href="/auth/login" 
                     className="block px-4 py-2 rounded font-vintage-body"
                     style={{ color: '#6B4C57' }}
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Entrar
                   </Link>
                   <Link 
                     href="/auth/register" 
                     className="block px-4 py-2 rounded mx-4 text-center vintage-button"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Cadastrar
                   </Link>
