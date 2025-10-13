@@ -221,7 +221,7 @@ export default function MyProductsPage() {
                           alt={product.title}
                           width={192}
                           height={192}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-contain rounded-lg"
                         />
                       ) : (
                         <Image 
@@ -229,7 +229,7 @@ export default function MyProductsPage() {
                           alt="Produto sem imagem"
                           width={192}
                           height={192}
-                          className="w-full h-full object-cover rounded-lg opacity-70"
+                          className="w-full h-full object-contain rounded-lg opacity-70"
                         />
                       );
                     })()}
