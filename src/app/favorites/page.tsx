@@ -7,6 +7,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types';
 
+type ProductRow = {
+  id: string;
+  title: string;
+  description: string;
+  price: string | number;
+  condition: Product['condition'];
+  category_id: string;
+  seller_id: string;
+  images: string[] | null;
+  location: string;
+  status: Product['status'];
+  tags?: string[] | null;
+  created_at?: string | Date;
+  updated_at?: string | Date;
+};
+
 export default function FavoritesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -15,54 +31,25 @@ export default function FavoritesPage() {
 
   const fetchFavorites = useCallback(async () => {
     try {
-      // TODO: Implementar API para buscar favoritos do usuário
-      // Simulando dados por enquanto
-      const mockFavorites: Product[] = [
-        {
-          id: '1',
-          title: 'Máquina de Escrever Vintage',
-          description: 'Máquina de escrever antiga, funcionando perfeitamente.',
-          price: 320.00,
-          condition: 'usado',
-          category_id: '3',
-          seller_id: 'seller1',
-          images: [],
-          location: 'Rio de Janeiro, RJ',
-          status: 'disponivel',
-          created_at: new Date('2024-01-20'),
-          updated_at: new Date('2024-01-20')
-        },
-        {
-          id: '2',
-          title: 'Luminária Art Déco',
-          description: 'Luminária estilo Art Déco, original dos anos 40.',
-          price: 680.00,
-          condition: 'usado',
-          category_id: '1',
-          seller_id: 'seller2',
-          images: [],
-          location: 'São Paulo, SP',
-          status: 'disponivel',
-          created_at: new Date('2024-01-18'),
-          updated_at: new Date('2024-01-18')
-        },
-        {
-          id: '3',
-          title: 'Disco Vinil Miles Davis',
-          description: 'Kind of Blue - edição original de 1959.',
-          price: 450.00,
-          condition: 'usado',
-          category_id: '2',
-          seller_id: 'seller3',
-          images: [],
-          location: 'Belo Horizonte, MG',
-          status: 'disponivel',
-          created_at: new Date('2024-01-15'),
-          updated_at: new Date('2024-01-15')
-        }
-      ];
-      
-      setFavorites(mockFavorites);
+      const res = await fetch('/api/favorites', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Falha ao carregar favoritos');
+      const data = await res.json();
+      const products: Product[] = (data.products as ProductRow[] | undefined || []).map((p): Product => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        price: Number(p.price),
+        condition: p.condition,
+        category_id: p.category_id,
+        seller_id: p.seller_id,
+        images: Array.isArray(p.images) ? p.images : [],
+        location: p.location,
+        status: p.status,
+        tags: Array.isArray(p.tags) ? p.tags : undefined,
+        created_at: p.created_at ? new Date(p.created_at) : new Date(),
+        updated_at: p.updated_at ? new Date(p.updated_at) : new Date(),
+      }));
+      setFavorites(products);
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
     } finally {
@@ -81,10 +68,18 @@ export default function FavoritesPage() {
     fetchFavorites();
   }, [session, status, router, fetchFavorites]);
 
-  const removeFavorite = (productId: string) => {
-    if (confirm('Remover este produto dos favoritos?')) {
-      setFavorites(favorites.filter(p => p.id !== productId));
-      // TODO: Implementar API para remover favorito
+  const removeFavorite = async (productId: string) => {
+    if (!confirm('Remover este produto dos favoritos?')) return;
+    const prev = favorites;
+    setFavorites(prev.filter(p => p.id !== productId));
+    try {
+      const res = await fetch(`/api/favorites?product_id=${encodeURIComponent(productId)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Falha ao remover favorito');
+    } catch (e) {
+      console.error(e);
+      // rollback
+      setFavorites(prev);
+      alert('Não foi possível remover. Tente novamente.');
     }
   };
 
