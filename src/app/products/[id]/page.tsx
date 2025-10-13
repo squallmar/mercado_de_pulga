@@ -145,6 +145,7 @@ export default function ProductDetailsPage() {
                     alt={product.title}
                     width={400}
                     height={400}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="w-full h-full object-contain rounded-lg"
                   />
                 ) : (
@@ -153,6 +154,7 @@ export default function ProductDetailsPage() {
                     alt="Produto sem imagem"
                     width={400}
                     height={400}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="w-full h-full object-contain rounded-lg opacity-70"
                   />
                 );
@@ -237,12 +239,18 @@ export default function ProductDetailsPage() {
                     <p className="font-vintage-body text-sm text-[#6B4C57]">Membro desde 2024</p>
                   </div>
                 </div>              <div className="space-y-3">
-                <button 
-                  onClick={handleContact}
-                  className="vintage-button w-full"
-                >
-                  💬 Entrar em Contato
-                </button>
+                {session?.user?.id === product.seller_id ? (
+                  <div className="w-full py-3 px-4 bg-[#E8DCC6] text-[#6B4C57] rounded-lg font-vintage-subtitle text-center">
+                    📝 Este é seu produto
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleContact}
+                    className="vintage-button w-full"
+                  >
+                    💬 Entrar em Contato
+                  </button>
+                )}
                 
                 <button className="w-full py-3 px-4 border-2 border-[#8B6F47] text-[#8B6F47] rounded-lg font-vintage-subtitle hover:bg-[#8B6F47] hover:text-white transition-colors">
                   📱 Ver Telefone
