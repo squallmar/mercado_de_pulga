@@ -1,7 +1,12 @@
+"use client";
+
 import { Product } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { isValidImageUrl, formatRating, formatPrice } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product & {
@@ -12,6 +17,33 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [isFav, setIsFav] = useState(false);
+
+  const toggleFavorite = async () => {
+    if (!session) {
+      router.push('/auth/login');
+      return;
+    }
+    try {
+      if (isFav) {
+        const res = await fetch(`/api/favorites?product_id=${encodeURIComponent(product.id)}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Falha ao remover favorito');
+        setIsFav(false);
+      } else {
+        const res = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: product.id })
+        });
+        if (!res.ok) throw new Error('Falha ao adicionar favorito');
+        setIsFav(true);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
   const getConditionColor = (condition: string) => {
     switch (condition) {
       case 'novo':
@@ -152,13 +184,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button 
               className="p-2 rounded-full transition-colors group/heart"
               style={{ background: '#F5F1E8', border: '1px solid #E8DCC6' }}
+              aria-label={isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // TODO: Implementar favoritar
+                toggleFavorite();
               }}
             >
-              <svg className="w-5 h-5 transition-colors group-hover/heart:text-red-500" style={{ color: '#6B4C57' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill={isFav ? '#D95757' : 'none'} stroke={isFav ? '#D95757' : '#6B4C57'}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </button>

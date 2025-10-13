@@ -20,16 +20,16 @@ export default function ProductDetailsPage() {
   const fetchProduct = useCallback(async () => {
     try {
       const response = await fetch(`/api/products?id=${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.products && data.products.length > 0) {
-          setProduct(data.products[0]);
-        } else {
-          setError('Produto não encontrado');
-        }
-      } else {
-        setError('Erro ao carregar produto');
-      }
+      if (!response.ok) throw new Error('Erro ao carregar produto');
+      const data = await response.json();
+      if (!data || data.error) throw new Error('Produto não encontrado');
+      setProduct({
+        ...data,
+        price: Number(data.price),
+        images: Array.isArray(data.images) ? data.images : [],
+        created_at: data.created_at ? new Date(data.created_at) : new Date(),
+        updated_at: data.updated_at ? new Date(data.updated_at) : new Date(),
+      });
     } catch {
       setError('Erro ao carregar produto');
     } finally {
@@ -48,9 +48,23 @@ export default function ProductDetailsPage() {
       router.push('/auth/login');
       return;
     }
-    
-    // TODO: Implementar API de favoritos
-    setIsFavorite(!isFavorite);
+    try {
+      if (isFavorite) {
+        const res = await fetch(`/api/favorites?product_id=${params.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Falha ao remover favorito');
+        setIsFavorite(false);
+      } else {
+        const res = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: params.id })
+        });
+        if (!res.ok) throw new Error('Falha ao adicionar favorito');
+        setIsFavorite(true);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleContact = () => {
