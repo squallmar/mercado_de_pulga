@@ -93,10 +93,21 @@ export default function Navigation() {
                   </button>
 
                   {isMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-48 vintage-card py-1 z-50">
-                        <div className="px-4 py-2 text-sm border-b" style={{ borderColor: '#E8DCC6', color: '#3C3C3C' }}>
-                          <div className="font-vintage-subtitle font-medium">{session.user?.name}</div>
-                          <div className="font-vintage-body" style={{ color: '#6B4C57' }}>{session.user?.email}</div>
+                      <div className="absolute right-0 mt-2 w-64 vintage-card py-1 z-50">
+                        <div className="px-4 py-2 text-sm border-b space-y-0.5" style={{ borderColor: '#E8DCC6', color: '#3C3C3C' }}>
+                          <div
+                            className="font-vintage-subtitle font-medium truncate"
+                            title={session.user?.name || undefined}
+                          >
+                            {session.user?.name}
+                          </div>
+                          <div
+                            className="font-vintage-body truncate"
+                            style={{ color: '#6B4C57' }}
+                            title={session.user?.email || undefined}
+                          >
+                            {session.user?.email}
+                          </div>
                       </div>
                       
                       <Link 
