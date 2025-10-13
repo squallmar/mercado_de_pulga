@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 interface Category {
   id: string;
@@ -142,9 +143,12 @@ export default function SellPage() {
     setSubmitting(true);
 
     try {
-      // TODO: Implementar upload de imagens (ex: Cloudinary)
-      // Por enquanto, deixar array vazio até implementar upload real
-      const imageUrls: string[] = []; // form.images.map((file, index) => `placeholder-${index}-${file.name}`);
+      // Fazer upload das imagens para o Cloudinary e coletar URLs seguras
+      const imageUrls: string[] = [];
+      for (const file of form.images) {
+        const { url } = await uploadToCloudinary(file);
+        imageUrls.push(url);
+      }
       
       const productData = {
         title: form.title,

@@ -32,11 +32,24 @@ export default function MyProductsPage() {
       const data = await response.json();
       
       // Converter strings de data para objetos Date
-      const productsWithDates = (data.products || []).map((product: ProductFromAPI) => ({
-        ...product,
-        created_at: new Date(product.created_at),
-        updated_at: new Date(product.updated_at)
-      }));
+      const productsWithDates = (data.products || []).map((product: ProductFromAPI & { images?: unknown }) => {
+        let imgs: string[] = [];
+        if (Array.isArray(product.images)) {
+          imgs = product.images as string[];
+        } else if (typeof product.images === 'string') {
+          try {
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed)) imgs = parsed as string[];
+          } catch {}
+        }
+
+        return {
+          ...product,
+          images: imgs,
+          created_at: new Date(product.created_at),
+          updated_at: new Date(product.updated_at)
+        } as Product;
+      });
       
       setProducts(productsWithDates);
     } catch (error) {
@@ -89,8 +102,7 @@ export default function MyProductsPage() {
   });
 
   const handleEditProduct = (productId: string) => {
-    // TODO: Implementar edição de produto
-    alert(`Editar produto ${productId} - Em breve!`);
+    router.push(`/products/${productId}/edit`);
   };
 
   const handleDeleteProduct = (productId: string) => {
@@ -169,7 +181,15 @@ export default function MyProductsPage() {
         {/* Lista de produtos */}
         {filteredProducts.length === 0 ? (
           <div className="vintage-card p-12 text-center">
-            <div className="text-6xl mb-4">📦</div>
+            <div className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden">
+              <Image 
+                src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="14" font-family="Arial">Vazio</text></svg>')}`} 
+                alt="Nenhum produto encontrado"
+                width={128}
+                height={128}
+                className="w-full h-full object-cover opacity-70"
+              />
+            </div>
             <h2 className="font-vintage-subtitle text-xl mb-2" style={{ color: '#6B4C57' }}>
               {filter === 'all' ? 'Nenhum produto encontrado' : `Nenhum produto ${filter === 'active' ? 'ativo' : filter === 'paused' ? 'pausado' : 'vendido'}`}
             </h2>
@@ -201,7 +221,13 @@ export default function MyProductsPage() {
                         className="w-full h-full object-cover rounded-lg"
                       />
                     ) : (
-                      <div className="text-4xl">📦</div>
+                      <Image 
+                        src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="14" font-family="Arial">Sem Imagem</text></svg>')}`} 
+                        alt="Produto sem imagem"
+                        width={192}
+                        height={192}
+                        className="w-full h-full object-cover rounded-lg opacity-70"
+                      />
                     )}
                   </div>
                   

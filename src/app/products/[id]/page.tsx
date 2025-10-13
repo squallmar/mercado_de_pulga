@@ -122,10 +122,13 @@ export default function ProductDetailsPage() {
                   className="w-full h-full object-cover rounded-lg"
                 />
               ) : (
-                <div className="text-center">
-                  <div className="text-6xl mb-4">📦</div>
-                  <p className="font-vintage-body text-[#6B4C57]">Sem imagem</p>
-                </div>
+                  <Image 
+                    src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="18" font-family="Arial">Produto sem imagem</text></svg>')}`} 
+                  alt="Produto sem imagem"
+                  width={400}
+                  height={400}
+                  className="w-full h-full object-cover rounded-lg opacity-70"
+                />
               )}
             </div>
             

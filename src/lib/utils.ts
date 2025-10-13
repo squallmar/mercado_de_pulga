@@ -1,7 +1,12 @@
 export const isValidImageUrl = (url: string): boolean => {
   try {
     new URL(url);
-    return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/');
+    return (
+      url.startsWith('http://') ||
+      url.startsWith('https://') ||
+      url.startsWith('/') ||
+      url.startsWith('data:')
+    );
   } catch {
     return false;
   }

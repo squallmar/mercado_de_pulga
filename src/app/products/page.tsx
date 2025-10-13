@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Product, Category } from '@/types';
 import ProductCard from '@/components/ProductCard';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -173,7 +174,15 @@ export default function ProductsPage() {
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-6xl mb-4" style={{ color: '#8B6F47' }}>📦</div>
+                <div className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden">
+                  <Image 
+                    src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="14" font-family="Arial">Vazio</text></svg>')}`} 
+                    alt="Nenhum produto encontrado"
+                    width={128}
+                    height={128}
+                    className="w-full h-full object-cover opacity-70"
+                  />
+                </div>
                 <h3 className="text-xl font-vintage-subtitle mb-2" style={{ color: '#3C3C3C' }}>Nenhum produto encontrado</h3>
                 <p className="font-vintage-body" style={{ color: '#6B4C57' }}>Tente ajustar os filtros ou termos de busca</p>
               </div>

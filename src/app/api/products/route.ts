@@ -219,3 +219,52 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'ID do produto é obrigatório' }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { title, description, price, location, images } = body as {
+      title?: string;
+      description?: string;
+      price?: number;
+      location?: string;
+      images?: string[];
+    };
+
+  const client = await pool.connect();
+  const fields: string[] = [];
+  const params: (string | number)[] = [];
+    let idx = 1;
+
+    if (title !== undefined) { fields.push(`title = $${idx++}`); params.push(title); }
+    if (description !== undefined) { fields.push(`description = $${idx++}`); params.push(description); }
+    if (price !== undefined) { fields.push(`price = $${idx++}`); params.push(price); }
+    if (location !== undefined) { fields.push(`location = $${idx++}`); params.push(location); }
+    if (images !== undefined) { fields.push(`images = $${idx++}`); params.push(JSON.stringify(images)); }
+
+    if (fields.length === 0) {
+      client.release();
+      return NextResponse.json({ error: 'Nada para atualizar' }, { status: 400 });
+    }
+
+    const query = `UPDATE products SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`;
+    params.push(id);
+    const result = await client.query(query, params);
+    client.release();
+
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+    }
+
+    return NextResponse.json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+  }
+}
