@@ -212,23 +212,27 @@ export default function MyProductsPage() {
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Imagem */}
                   <div className="w-full md:w-48 h-48 bg-gradient-to-br from-[#E8DCC6] to-[#F5F1E8] rounded-lg flex items-center justify-center flex-shrink-0">
-                    {product.images && product.images.length > 0 && isValidImageUrl(product.images[0]) ? (
-                      <Image 
-                        src={product.images[0]} 
-                        alt={product.title}
-                        width={192}
-                        height={192}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <Image 
-                        src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="14" font-family="Arial">Sem Imagem</text></svg>')}`} 
-                        alt="Produto sem imagem"
-                        width={192}
-                        height={192}
-                        className="w-full h-full object-cover rounded-lg opacity-70"
-                      />
-                    )}
+                    {(() => {
+                      const validImage = product.images?.find(img => isValidImageUrl(img));
+                      
+                      return validImage ? (
+                        <Image 
+                          src={validImage} 
+                          alt={product.title}
+                          width={192}
+                          height={192}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <Image 
+                          src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="14" font-family="Arial">Sem Imagem</text></svg>')}`} 
+                          alt="Produto sem imagem"
+                          width={192}
+                          height={192}
+                          className="w-full h-full object-cover rounded-lg opacity-70"
+                        />
+                      );
+                    })()}
                   </div>
                   
                   {/* Detalhes */}

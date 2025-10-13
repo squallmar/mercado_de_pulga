@@ -42,34 +42,47 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
-  const images = typeof product.images === 'string' 
-    ? JSON.parse(product.images) 
-    : product.images || [];
+  const images = (() => {
+    let imgs: string[] = [];
+    if (typeof product.images === 'string') {
+      try {
+        imgs = JSON.parse(product.images);
+      } catch {
+        imgs = [];
+      }
+    } else if (Array.isArray(product.images)) {
+      imgs = product.images;
+    } else {
+      imgs = [];
+    }
+    return imgs;
+  })();
 
   return (
     <Link href={`/products/${product.id}`}>
       <div className="vintage-card overflow-hidden group cursor-pointer">
         {/* Imagem do produto */}
         <div className="relative h-48" style={{ background: '#E8DCC6' }}>
-          {images.length > 0 && isValidImageUrl(images[0]) ? (
-            <Image
-              src={images[0]}
-              alt={product.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-200"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#E8DCC6] to-[#F5F1E8]">
-                <Image
-                  src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`}
-                alt="Produto sem imagem"
+          {(() => {
+            const validImage = images.find(img => isValidImageUrl(img));
+            return validImage ? (
+              <Image
+                src={validImage}
+                alt={product.title}
                 fill
-                className="object-cover opacity-70"
+                className="object-cover group-hover:scale-105 transition-transform duration-200"
               />
-            </div>
-          )}
-          
-          {/* Badge de condição */}
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#E8DCC6] to-[#F5F1E8]">
+                  <Image
+                    src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`}
+                    alt="Produto sem imagem"
+                    fill
+                    className="object-cover opacity-70"
+                  />
+              </div>
+            );
+          })()}          {/* Badge de condição */}
           <div className="absolute top-2 left-2">
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getConditionColor(product.condition)}`} style={{ border: '1px solid rgba(139,111,71,0.2)', background: '#F5F1E8', color: '#6B4C57' }}>
               {getConditionLabel(product.condition)}

@@ -144,25 +144,26 @@ export default function FavoritesPage() {
               <div key={product.id} className="vintage-card overflow-hidden group">
                 {/* Imagem */}
                 <div className="relative aspect-square bg-gradient-to-br from-[#E8DCC6] to-[#F5F1E8] flex items-center justify-center">
-                  {product.images && product.images.length > 0 ? (
-                    <Image 
-                      src={product.images[0]} 
-                      alt={product.title}
-                      width={300}
-                      height={300}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
+                  {(() => {
+                    const validImage = product.images?.find(img => typeof img === 'string' && (img.startsWith('http') || img.startsWith('data:')));
+                    return validImage ? (
                       <Image 
-                        src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`} 
-                      alt="Produto sem imagem"
-                      width={300}
-                      height={300}
-                      className="w-full h-full object-cover opacity-70"
-                    />
-                  )}
-                  
-                  {/* Botão de remover favorito */}
+                        src={validImage} 
+                        alt={product.title}
+                        width={300}
+                        height={300}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                        <Image 
+                          src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`} 
+                          alt="Produto sem imagem"
+                          width={300}
+                          height={300}
+                          className="w-full h-full object-cover opacity-70"
+                        />
+                    );
+                  })()}                  {/* Botão de remover favorito */}
                   <button
                     onClick={() => removeFavorite(product.id)}
                     className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg"

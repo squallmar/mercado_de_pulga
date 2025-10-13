@@ -88,7 +88,7 @@ export default function EditProductPage() {
         description,
         price: parseFloat(price),
         location,
-        images: [...images, ...uploaded],
+        images: [...images, ...uploaded].filter(img => img.startsWith('http')),
       };
 
       const res = await fetch(`/api/products?id=${id}`, {

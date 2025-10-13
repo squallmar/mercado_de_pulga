@@ -113,26 +113,27 @@ export default function ProductDetailsPage() {
           {/* Imagens do produto */}
           <div className="vintage-card p-6">
             <div className="aspect-square bg-gradient-to-br from-[#E8DCC6] to-[#F5F1E8] rounded-lg flex items-center justify-center mb-4">
-              {product.images && product.images.length > 0 && isValidImageUrl(product.images[0]) ? (
-                <Image 
-                  src={product.images[0]} 
-                  alt={product.title}
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              ) : (
+              {(() => {
+                const validImage = product.images?.find(img => isValidImageUrl(img));
+                return validImage ? (
+                  <Image 
+                    src={validImage} 
+                    alt={product.title}
+                    width={400}
+                    height={400}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                ) : (
                   <Image 
                     src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="18" font-family="Arial">Produto sem imagem</text></svg>')}`} 
-                  alt="Produto sem imagem"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-cover rounded-lg opacity-70"
-                />
-              )}
-            </div>
-            
-            {/* Galeria de imagens (placeholder) */}
+                    alt="Produto sem imagem"
+                    width={400}
+                    height={400}
+                    className="w-full h-full object-cover rounded-lg opacity-70"
+                  />
+                );
+              })()}
+            </div>            {/* Galeria de imagens (placeholder) */}
             <div className="grid grid-cols-4 gap-2">
               {[1, 2, 3, 4].map((i) => (
                 <div 
