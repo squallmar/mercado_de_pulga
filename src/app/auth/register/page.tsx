@@ -88,18 +88,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" style={{ background: 'linear-gradient(135deg, #F5F1E8 0%, #E8DCC6 100%)' }}>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-blue-600">Mercado de Pulga</h1>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Crie sua conta
-          </h2>
+          <h1 className="font-vintage-title text-3xl" style={{ color: '#8B6F47' }}>Mercado de Pulga</h1>
+          <h2 className="mt-6 text-center text-3xl font-vintage-subtitle" style={{ color: '#3C3C3C' }}>Crie sua conta</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Ou{' '}
             <Link
               href="/auth/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-vintage-body hover:underline"
+              style={{ color: '#8B6F47' }}
             >
               entre na sua conta existente
             </Link>
@@ -108,16 +107,16 @@ export default function RegisterPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="vintage-card py-8 px-4 sm:rounded-lg sm:px-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+              <div className="px-4 py-3 rounded-md text-sm" style={{ background: '#FDF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                 Nome completo
               </label>
               <div className="mt-1">
@@ -129,14 +128,14 @@ export default function RegisterPage() {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md placeholder-gray-500 sm:text-sm vintage-input"
                   placeholder="Seu nome completo"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                 Email
               </label>
               <div className="mt-1">
@@ -148,14 +147,14 @@ export default function RegisterPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md placeholder-gray-500 sm:text-sm vintage-input"
                   placeholder="seu@email.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="phone" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                 Telefone (opcional)
               </label>
               <div className="mt-1">
@@ -166,14 +165,14 @@ export default function RegisterPage() {
                   autoComplete="tel"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md placeholder-gray-500 sm:text-sm vintage-input"
                   placeholder="(11) 99999-9999"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="location" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                 Localização (opcional)
               </label>
               <div className="mt-1">
@@ -183,14 +182,14 @@ export default function RegisterPage() {
                   type="text"
                   value={formData.location}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md placeholder-gray-500 sm:text-sm vintage-input"
                   placeholder="São Paulo, SP"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                 Senha
               </label>
               <div className="mt-1">
@@ -202,14 +201,14 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md placeholder-gray-500 sm:text-sm vintage-input"
                   placeholder="Mínimo 6 caracteres"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                 Confirmar senha
               </label>
               <div className="mt-1">
@@ -221,7 +220,7 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 rounded-md placeholder-gray-500 sm:text-sm vintage-input"
                   placeholder="Digite a senha novamente"
                 />
               </div>
@@ -233,15 +232,15 @@ export default function RegisterPage() {
                 name="agree"
                 type="checkbox"
                 required
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 rounded"
               />
-              <label htmlFor="agree" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="agree" className="ml-2 block text-sm font-vintage-body" style={{ color: '#6B4C57' }}>
                 Eu aceito os{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
+                <a href="#" className="hover:underline" style={{ color: '#8B6F47' }}>
                   Termos de Uso
                 </a>{' '}
                 e a{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
+                <a href="#" className="hover:underline" style={{ color: '#8B6F47' }}>
                   Política de Privacidade
                 </a>
               </label>
@@ -251,7 +250,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed vintage-button"
               >
                 {loading ? (
                   <>

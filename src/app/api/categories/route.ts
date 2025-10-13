@@ -4,20 +4,36 @@ import pool from '@/lib/database';
 export async function GET() {
   try {
     const client = await pool.connect();
-    
-    const query = `
-      SELECT c.*, 
-             COUNT(p.id) as product_count
-      FROM categories c
-      LEFT JOIN products p ON c.id = p.category_id AND p.status = 'disponivel'
-      GROUP BY c.id, c.name, c.slug, c.icon, c.parent_id, c.created_at
-      ORDER BY c.name ASC
-    `;
-    
-    const result = await client.query(query);
-    client.release();
 
-    return NextResponse.json(result.rows);
+    try {
+      // Garantir que a categoria "Relógios e Joias" exista (idempotente)
+      const checkRes = await client.query(
+        `SELECT 1 FROM categories WHERE slug = $1 LIMIT 1`,
+        ['relogios-joias']
+      );
+
+      if (checkRes.rowCount === 0) {
+        await client.query(
+          `INSERT INTO categories (name, slug, icon) VALUES ($1, $2, $3)
+           ON CONFLICT (slug) DO NOTHING`,
+          ['Relógios e Joias', 'relogios-joias', '⌚']
+        );
+      }
+
+      const query = `
+        SELECT c.*, 
+               COUNT(p.id) as product_count
+        FROM categories c
+        LEFT JOIN products p ON c.id = p.category_id AND p.status = 'disponivel'
+        GROUP BY c.id, c.name, c.slug, c.icon, c.parent_id, c.created_at
+        ORDER BY c.name ASC
+      `;
+
+      const result = await client.query(query);
+      return NextResponse.json(result.rows);
+    } finally {
+      client.release();
+    }
   } catch (error) {
     console.error('Erro ao buscar categorias:', error);
     return NextResponse.json(

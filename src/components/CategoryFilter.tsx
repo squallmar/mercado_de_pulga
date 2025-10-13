@@ -13,7 +13,7 @@ export default function CategoryFilter({
 }: CategoryFilterProps) {
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-medium text-gray-900 mb-3">Categoria</h3>
+      <h3 className="text-sm font-vintage-subtitle mb-3" style={{ color: '#3C3C3C' }}>Categoria</h3>
       <div className="space-y-2 max-h-64 overflow-y-auto">
         <label className="flex items-center">
           <input
@@ -22,9 +22,9 @@ export default function CategoryFilter({
             value=""
             checked={selectedCategory === ''}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="mr-2 text-blue-600"
+            className="mr-2"
           />
-          <span className="text-sm text-gray-700">Todas as categorias</span>
+          <span className="text-sm font-vintage-body" style={{ color: '#6B4C57' }}>Todas as categorias</span>
         </label>
         
         {categories.map((category) => (
@@ -35,9 +35,9 @@ export default function CategoryFilter({
               value={category.id}
               checked={selectedCategory === category.id}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="mr-2 text-blue-600"
+              className="mr-2"
             />
-            <span className="text-sm text-gray-700 flex items-center">
+            <span className="text-sm font-vintage-body flex items-center" style={{ color: '#6B4C57' }}>
               {category.icon && (
                 <span className="mr-2" role="img" aria-label={category.name}>
                   {category.icon}
@@ -46,7 +46,7 @@ export default function CategoryFilter({
               {category.name}
               {/* Mostrar contador de produtos se disponível */}
               {'product_count' in category && (
-                <span className="ml-auto text-xs text-gray-400">
+                <span className="ml-auto text-xs" style={{ color: '#8B6F47' }}>
                   ({(category as Category & { product_count: number }).product_count})
                 </span>
               )}

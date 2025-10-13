@@ -41,35 +41,35 @@ export default function PriceFilter({ priceRange, onPriceChange }: PriceFilterPr
 
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-medium text-gray-900 mb-3">Faixa de Preço</h3>
+      <h3 className="text-sm font-vintage-subtitle mb-3" style={{ color: '#3C3C3C' }}>Faixa de Preço</h3>
       
       <div className="space-y-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Preço mínimo</label>
+          <label className="block text-xs font-vintage-body mb-1" style={{ color: '#6B4C57' }}>Preço mínimo</label>
           <input
             type="text"
             value={priceRange.min ? formatCurrency(priceRange.min) : ''}
             onChange={(e) => handleInputChange(e.target.value, 'min')}
             placeholder="R$ 0,00"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="vintage-input w-full px-3 py-2 text-sm"
           />
         </div>
         
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Preço máximo</label>
+          <label className="block text-xs font-vintage-body mb-1" style={{ color: '#6B4C57' }}>Preço máximo</label>
           <input
             type="text"
             value={priceRange.max ? formatCurrency(priceRange.max) : ''}
             onChange={(e) => handleInputChange(e.target.value, 'max')}
             placeholder="R$ 0,00"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="vintage-input w-full px-3 py-2 text-sm"
           />
         </div>
       </div>
 
       {/* Sugestões de faixa de preço */}
       <div className="mt-3">
-        <p className="text-xs text-gray-500 mb-2">Sugestões:</p>
+        <p className="text-xs font-vintage-body mb-2" style={{ color: '#6B4C57' }}>Sugestões:</p>
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: 'Até R$ 50', min: '', max: '5000' },
@@ -80,7 +80,8 @@ export default function PriceFilter({ priceRange, onPriceChange }: PriceFilterPr
             <button
               key={suggestion.label}
               onClick={() => onPriceChange({ min: suggestion.min, max: suggestion.max })}
-              className="text-xs px-2 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 transition-colors"
+              className="text-xs px-2 py-1 rounded transition-colors font-vintage-body"
+              style={{ border: '1px solid #E8DCC6', color: '#6B4C57', background: '#F5F1E8' }}
             >
               {suggestion.label}
             </button>

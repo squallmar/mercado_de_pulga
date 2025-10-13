@@ -9,20 +9,51 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const search = searchParams.get('search');
+    const sellerId = searchParams.get('seller_id'); // Novo parâmetro para filtrar por vendedor
+    const id = searchParams.get('id'); // Para buscar produto específico
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
     const offset = (page - 1) * limit;
+
+    // Se foi solicitado um produto específico por ID
+    if (id) {
+      const client = await pool.connect();
+      const result = await client.query(`
+        SELECT p.*, u.name as seller_name, u.rating as seller_rating, c.name as category_name
+        FROM products p
+        JOIN users u ON p.seller_id = u.id
+        JOIN categories c ON p.category_id = c.id
+        WHERE p.id = $1
+      `, [id]);
+      client.release();
+      
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+      }
+      
+      return NextResponse.json(result.rows[0]);
+    }
 
     let query = `
       SELECT p.*, u.name as seller_name, u.rating as seller_rating, c.name as category_name
       FROM products p
       JOIN users u ON p.seller_id = u.id
       JOIN categories c ON p.category_id = c.id
-      WHERE p.status = 'disponivel'
+      WHERE 1=1
     `;
     
     const params: (string | number)[] = [];
     let paramCount = 0;
+
+    // Se não há seller_id específico, mostrar apenas produtos disponíveis
+    if (!sellerId) {
+      query += ` AND p.status = 'disponivel'`;
+    } else {
+      // Se há seller_id, mostrar todos os produtos do vendedor
+      paramCount++;
+      query += ` AND p.seller_id = $${paramCount}`;
+      params.push(sellerId);
+    }
 
     if (category) {
       paramCount++;
@@ -64,10 +95,18 @@ export async function GET(request: NextRequest) {
     let countQuery = `
       SELECT COUNT(*) as total
       FROM products p
-      WHERE p.status = 'disponivel'
+      WHERE 1=1
     `;
     const countParams: (string | number)[] = [];
     let countParamCount = 0;
+
+    if (!sellerId) {
+      countQuery += ` AND p.status = 'disponivel'`;
+    } else {
+      countParamCount++;
+      countQuery += ` AND p.seller_id = $${countParamCount}`;
+      countParams.push(sellerId);
+    }
 
     if (category) {
       countParamCount++;

@@ -92,16 +92,12 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #F5F1E8 0%, #E8DCC6 100%)' }}>
+      <div className="container mx-auto px-4 py-10">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Catálogo de Produtos
-          </h1>
-          <p className="text-gray-600">
-            Encontre produtos únicos de segunda mão
-          </p>
+          <h1 className="font-vintage-title text-4xl mb-2" style={{ color: '#8B6F47' }}>Catálogo de Produtos</h1>
+          <p className="font-vintage-body" style={{ color: '#6B4C57' }}>Encontre produtos únicos de segunda mão</p>
         </div>
 
         {/* Barra de busca */}
@@ -116,12 +112,13 @@ export default function ProductsPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar com filtros */}
           <div className="lg:w-1/4">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+            <div className="vintage-card p-6 sticky top-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Filtros</h2>
+                <h2 className="text-lg font-vintage-subtitle" style={{ color: '#3C3C3C' }}>Filtros</h2>
                 <button
                   onClick={handleResetFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm font-vintage-body hover:underline"
+                  style={{ color: '#8B6F47' }}
                 >
                   Limpar filtros
                 </button>
@@ -136,7 +133,7 @@ export default function ProductsPage() {
 
               {/* Filtro por condição */}
               <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Condição</h3>
+                <h3 className="text-sm font-vintage-subtitle mb-3" style={{ color: '#3C3C3C' }}>Condição</h3>
                 <div className="space-y-2">
                   {[
                     { value: '', label: 'Todas' },
@@ -154,7 +151,7 @@ export default function ProductsPage() {
                         onChange={(e) => setSelectedCondition(e.target.value)}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-700">{condition.label}</span>
+                      <span className="text-sm font-vintage-body" style={{ color: '#6B4C57' }}>{condition.label}</span>
                     </label>
                   ))}
                 </div>
@@ -172,26 +169,22 @@ export default function ProductsPage() {
           <div className="lg:w-3/4">
             {loading ? (
               <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-2" style={{ borderColor: '#D4AF37', borderTopColor: 'transparent' }}></div>
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">📦</div>
-                <h3 className="text-xl font-medium text-gray-900 mb-2">
-                  Nenhum produto encontrado
-                </h3>
-                <p className="text-gray-500">
-                  Tente ajustar os filtros ou termos de busca
-                </p>
+                <div className="text-6xl mb-4" style={{ color: '#8B6F47' }}>📦</div>
+                <h3 className="text-xl font-vintage-subtitle mb-2" style={{ color: '#3C3C3C' }}>Nenhum produto encontrado</h3>
+                <p className="font-vintage-body" style={{ color: '#6B4C57' }}>Tente ajustar os filtros ou termos de busca</p>
               </div>
             ) : (
               <>
                 {/* Informações da busca */}
                 <div className="flex justify-between items-center mb-6">
-                  <p className="text-gray-600">
+                  <p className="font-vintage-body" style={{ color: '#6B4C57' }}>
                     {pagination?.total} produto{pagination?.total !== 1 ? 's' : ''} encontrado{pagination?.total !== 1 ? 's' : ''}
                   </p>
-                  <select className="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                  <select className="px-3 py-1 text-sm vintage-input" style={{ paddingTop: '0.4rem', paddingBottom: '0.4rem' }}>
                     <option>Mais recentes</option>
                     <option>Menor preço</option>
                     <option>Maior preço</option>

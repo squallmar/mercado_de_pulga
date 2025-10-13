@@ -1,6 +1,7 @@
 import { Product } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
+import { isValidImageUrl, formatRating, formatPrice } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product & {
@@ -11,13 +12,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
-
   const getConditionColor = (condition: string) => {
     switch (condition) {
       case 'novo':
@@ -54,10 +48,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.id}`}>
-      <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group cursor-pointer">
+      <div className="vintage-card overflow-hidden group cursor-pointer">
         {/* Imagem do produto */}
-        <div className="relative h-48 bg-gray-200">
-          {images.length > 0 ? (
+        <div className="relative h-48" style={{ background: '#E8DCC6' }}>
+          {images.length > 0 && isValidImageUrl(images[0]) ? (
             <Image
               src={images[0]}
               alt={product.title}
@@ -72,7 +66,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           
           {/* Badge de condição */}
           <div className="absolute top-2 left-2">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getConditionColor(product.condition)}`}>
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getConditionColor(product.condition)}`} style={{ border: '1px solid rgba(139,111,71,0.2)', background: '#F5F1E8', color: '#6B4C57' }}>
               {getConditionLabel(product.condition)}
             </span>
           </div>
@@ -89,22 +83,22 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="p-4">
           {/* Título e preço */}
           <div className="mb-2">
-            <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">
+            <h3 className="font-vintage-subtitle line-clamp-2 mb-1" style={{ color: '#3C3C3C' }}>
               {product.title}
             </h3>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-vintage-title" style={{ color: '#8B6F47' }}>
               {formatPrice(product.price)}
             </p>
           </div>
 
           {/* Categoria */}
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm font-vintage-body mb-2" style={{ color: '#6B4C57' }}>
             {product.category_name}
           </p>
 
           {/* Localização */}
           {product.location && (
-            <p className="text-sm text-gray-500 mb-3 flex items-center">
+            <p className="text-sm font-vintage-body mb-3 flex items-center" style={{ color: '#6B4C57' }}>
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -114,22 +108,22 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
 
           {/* Informações do vendedor */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid #E8DCC6' }}>
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-2">
-                <span className="text-xs font-medium text-gray-600">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2" style={{ background: 'linear-gradient(145deg, #8B6F47, #B4735C)' }}>
+                <span className="text-xs font-medium text-white">
                   {product.seller_name.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
                   {product.seller_name}
                 </p>
                 {product.seller_rating && (
                   <div className="flex items-center">
-                    <span className="text-yellow-400 text-xs">★</span>
-                    <span className="text-xs text-gray-500 ml-1">
-                      {product.seller_rating.toFixed(1)}
+                    <span className="text-xs" style={{ color: '#D4AF37' }}>★</span>
+                    <span className="text-xs ml-1" style={{ color: '#6B4C57' }}>
+                      {formatRating(product.seller_rating)}
                     </span>
                   </div>
                 )}
@@ -138,14 +132,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             
             {/* Botão de favoritar */}
             <button 
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 rounded-full transition-colors group/heart"
+              style={{ background: '#F5F1E8', border: '1px solid #E8DCC6' }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 // TODO: Implementar favoritar
               }}
             >
-              <svg className="w-5 h-5 text-gray-400 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 transition-colors group-hover/heart:text-red-500" style={{ color: '#6B4C57' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </button>

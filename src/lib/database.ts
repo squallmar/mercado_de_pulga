@@ -120,7 +120,8 @@ export async function createTables() {
         ('Livros e Revistas', 'livros-revistas', '📚'),
         ('Brinquedos e Jogos', 'brinquedos-jogos', '🧸'),
         ('Automóveis', 'automoveis', '🚗'),
-        ('Música e Instrumentos', 'musica-instrumentos', '🎵')
+        ('Música e Instrumentos', 'musica-instrumentos', '🎵'),
+        ('Relógios e Joias', 'relogios-joias', '⌚')
       ON CONFLICT (slug) DO NOTHING
     `);
 

@@ -1,26 +1,153 @@
+/* Importar fontes vintage do Google Fonts - precisa vir antes de qualquer regra */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paleta Vintage Elegante - Mercado de Pulga */
+  --vintage-cream: #F5F1E8;
+  --vintage-beige: #E8DCC6;
+  --vintage-brown: #8B6F47;
+  --vintage-rust: #B4735C;
+  --vintage-olive: #7A8471;
+  --vintage-burgundy: #6B4C57;
+  --vintage-gold: #D4AF37;
+  --vintage-charcoal: #3C3C3C;
+  
+  /* Shadows vintage */
+  --vintage-shadow: 0 4px 20px rgba(139, 111, 71, 0.15);
+  --vintage-shadow-hover: 0 8px 30px rgba(139, 111, 71, 0.25);
+  
+  --background: var(--vintage-cream);
+  --foreground: var(--vintage-charcoal);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--vintage-cream);
+    --foreground: var(--vintage-charcoal);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+}
+
+/* Tipografia Vintage */
+.font-vintage-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+.font-vintage-subtitle {
+  font-family: 'Source Serif Pro', serif;
+  font-weight: 600;
+}
+
+.font-vintage-body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Elementos Vintage */
+.vintage-card {
+  background: linear-gradient(145deg, #F5F1E8 0%, #E8DCC6 100%);
+  border: 1px solid rgba(139, 111, 71, 0.2);
+  border-radius: 12px;
+  box-shadow: var(--vintage-shadow);
+  transition: all 0.3s ease;
+}
+
+.vintage-card:hover {
+  box-shadow: var(--vintage-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.vintage-button {
+  background: linear-gradient(145deg, #8B6F47 0%, #B4735C 100%);
+  color: #F5F1E8;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'Source Serif Pro', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: var(--vintage-shadow);
+  transition: all 0.3s ease;
+}
+
+.vintage-button:hover {
+  background: linear-gradient(145deg, #B4735C 0%, #6B4C57 100%);
+  box-shadow: var(--vintage-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.vintage-tag {
+  background: #D4AF37;
+  color: #3C3C3C;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.vintage-input {
+  background: #F5F1E8;
+  border: 2px solid #E8DCC6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #3C3C3C;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.vintage-input:focus {
+  outline: none;
+  border-color: #8B6F47;
+  box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+}
+
+/* Scrollbar vintage */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E8DCC6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8B6F47;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B4735C;
+}
+
+/* Cursors para elementos interativos */
+button, 
+a, 
+[role="button"],
+[onclick],
+.vintage-button,
+select,
+input[type="radio"],
+input[type="checkbox"],
+input[type="submit"],
+input[type="button"],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Cursor pointer para links e botões específicos */
+.vintage-card:hover,
+.product-card,
+.category-card {
+  cursor: pointer;
 }
