@@ -7,30 +7,26 @@ import Link from 'next/link';
 
 interface Conversation {
   id: string;
-  productId: string;
-  productTitle: string;
-  productImage?: string;
-  productPrice: number;
-  otherUser: {
-    name: string;
-    avatar?: string;
-  };
-  lastMessage: {
-    content: string;
-    timestamp: Date;
-    isFromMe: boolean;
-  };
-  unreadCount: number;
-  status: 'ativa' | 'arquivada';
+  product_id: string;
+  product_title: string;
+  product_image?: string;
+  product_price: number;
+  other_user_name: string;
+  other_user_id: string;
+  last_message?: string;
+  last_message_time?: string;
+  last_message_sender_id?: string;
+  created_at: string;
 }
 
 interface Message {
   id: string;
+  conversation_id: string;
+  sender_id: string;
   content: string;
-  timestamp: Date;
-  isFromMe: boolean;
-  type: 'text' | 'image' | 'offer';
-  offerAmount?: number;
+  created_at: string;
+  type?: 'text' | 'image' | 'offer';
+  offer_amount?: number;
 }
 
 export default function MessagesPage() {
@@ -42,64 +38,23 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const isMyMessage = (message: Message) => {
+    return session?.user?.id === message.sender_id;
+  };
+
   const fetchConversations = useCallback(async () => {
     try {
-      // TODO: Implementar API para buscar conversas do usuário
-      // Simulando dados por enquanto
-      const mockConversations: Conversation[] = [
-        {
-          id: '1',
-          productId: '1',
-          productTitle: 'Poltrona Vintage Anos 70',
-          productPrice: 450.00,
-          otherUser: {
-            name: 'Maria Silva',
-          },
-          lastMessage: {
-            content: 'Posso ir ver a poltrona amanhã?',
-            timestamp: new Date('2024-01-22T14:30:00'),
-            isFromMe: false
-          },
-          unreadCount: 2,
-          status: 'ativa'
-        },
-        {
-          id: '2',
-          productId: '2',
-          productTitle: 'Mesa de Centro Retrô',
-          productPrice: 280.00,
-          otherUser: {
-            name: 'João Santos',
-          },
-          lastMessage: {
-            content: 'Obrigado! Vou pensar e te respondo.',
-            timestamp: new Date('2024-01-21T16:45:00'),
-            isFromMe: false
-          },
-          unreadCount: 0,
-          status: 'ativa'
-        },
-        {
-          id: '3',
-          productId: '3',
-          productTitle: 'Vinil Miles Davis',
-          productPrice: 450.00,
-          otherUser: {
-            name: 'Ana Costa',
-          },
-          lastMessage: {
-            content: 'Aceita R$ 400?',
-            timestamp: new Date('2024-01-20T10:15:00'),
-            isFromMe: false
-          },
-          unreadCount: 1,
-          status: 'ativa'
-        }
-      ];
+      const response = await fetch('/api/conversations');
       
-      setConversations(mockConversations);
-      if (mockConversations.length > 0) {
-        setSelectedConversation(mockConversations[0].id);
+      if (!response.ok) {
+        throw new Error('Erro ao carregar conversas');
+      }
+      
+      const data = await response.json();
+      setConversations(data.conversations || []);
+      
+      if (data.conversations && data.conversations.length > 0) {
+        setSelectedConversation(data.conversations[0].id);
       }
     } catch (error) {
       console.error('Erro ao carregar conversas:', error);
@@ -110,52 +65,17 @@ export default function MessagesPage() {
 
   const fetchMessages = useCallback(async (conversationId: string) => {
     try {
-      // TODO: Implementar API para buscar mensagens da conversa
-      // Por enquanto, usando dados mock baseados no conversationId
-      console.log('Carregando mensagens para conversa:', conversationId);
+      const response = await fetch(`/api/messages?conversation_id=${conversationId}`);
       
-      const mockMessages: Message[] = [
-        {
-          id: '1',
-          content: 'Olá! Tenho interesse na poltrona. Ela ainda está disponível?',
-          timestamp: new Date('2024-01-22T10:00:00'),
-          isFromMe: false,
-          type: 'text'
-        },
-        {
-          id: '2',
-          content: 'Oi! Sim, ainda está disponível. Você gostaria de vê-la pessoalmente?',
-          timestamp: new Date('2024-01-22T10:15:00'),
-          isFromMe: true,
-          type: 'text'
-        },
-        {
-          id: '3',
-          content: 'Perfeito! Aceita R$ 400?',
-          timestamp: new Date('2024-01-22T10:30:00'),
-          isFromMe: false,
-          type: 'offer',
-          offerAmount: 400
-        },
-        {
-          id: '4',
-          content: 'O preço está bem justo, mas podemos conversar pessoalmente. Que tal nos encontrarmos?',
-          timestamp: new Date('2024-01-22T11:00:00'),
-          isFromMe: true,
-          type: 'text'
-        },
-        {
-          id: '5',
-          content: 'Posso ir ver a poltrona amanhã?',
-          timestamp: new Date('2024-01-22T14:30:00'),
-          isFromMe: false,
-          type: 'text'
-        }
-      ];
+      if (!response.ok) {
+        throw new Error('Erro ao carregar mensagens');
+      }
       
-      setMessages(mockMessages);
+      const data = await response.json();
+      setMessages(data.messages || []);
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
+      setMessages([]);
     }
   }, []);
 
@@ -176,21 +96,46 @@ export default function MessagesPage() {
     }
   }, [selectedConversation, fetchMessages]);
 
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation || !session?.user?.id) return;
 
-    const message: Message = {
-      id: Date.now().toString(),
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      conversation_id: selectedConversation,
+      sender_id: session.user.id,
       content: newMessage,
-      timestamp: new Date(),
-      isFromMe: true,
+      created_at: new Date().toISOString(),
       type: 'text'
     };
 
-    setMessages(prev => [...prev, message]);
+    // Atualização otimista
+    setMessages(prev => [...prev, optimisticMessage]);
     setNewMessage('');
-    
-    // TODO: Implementar envio via API
+
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversation_id: selectedConversation,
+          content: newMessage
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao enviar mensagem');
+      }
+
+      // Recarregar mensagens para pegar a mensagem real do servidor
+      await fetchMessages(selectedConversation);
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      // Remover mensagem otimista em caso de erro
+      setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
+      setNewMessage(newMessage); // Restaurar o texto
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -285,33 +230,28 @@ export default function MessagesPage() {
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8B6F47, #B4735C)' }}>
                           <span className="text-white font-vintage-subtitle text-sm">
-                            {conversation.otherUser.name.charAt(0).toUpperCase()}
+                            {conversation.other_user_name.charAt(0).toUpperCase()}
                           </span>
                         </div>
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start mb-1">
                             <h4 className="font-vintage-subtitle text-sm text-[#3C3C3C] truncate">
-                              {conversation.otherUser.name}
+                              {conversation.other_user_name}
                             </h4>
                             <span className="text-xs text-[#6B4C57] font-vintage-body">
-                              {formatDate(conversation.lastMessage.timestamp)}
+                              {conversation.last_message_time ? formatDate(new Date(conversation.last_message_time)) : formatDate(new Date(conversation.created_at))}
                             </span>
                           </div>
                           
                           <p className="text-xs text-[#6B4C57] font-vintage-body mb-1 truncate">
-                            {conversation.productTitle}
+                            {conversation.product_title}
                           </p>
                           
                           <div className="flex justify-between items-center">
                             <p className="text-xs text-[#6B4C57] font-vintage-body truncate">
-                              {conversation.lastMessage.content}
+                              {conversation.last_message || 'Nova conversa'}
                             </p>
-                            {conversation.unreadCount > 0 && (
-                              <span className="bg-[#D4AF37] text-[#3C3C3C] text-xs px-2 py-1 rounded-full font-vintage-body font-medium ml-2">
-                                {conversation.unreadCount}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -330,21 +270,21 @@ export default function MessagesPage() {
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8B6F47, #B4735C)' }}>
                             <span className="text-white font-vintage-subtitle">
-                              {currentConversation.otherUser.name.charAt(0).toUpperCase()}
+                              {currentConversation.other_user_name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
                             <h3 className="font-vintage-subtitle text-[#3C3C3C]">
-                              {currentConversation.otherUser.name}
+                              {currentConversation.other_user_name}
                             </h3>
                             <p className="text-sm text-[#6B4C57] font-vintage-body">
-                              {currentConversation.productTitle} - R$ {currentConversation.productPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              {currentConversation.product_title} - R$ {currentConversation.product_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </p>
                           </div>
                         </div>
                         
                         <Link
-                          href={`/products/${currentConversation.productId}`}
+                          href={`/products/${currentConversation.product_id}`}
                           className="text-sm vintage-button px-3 py-1"
                         >
                           Ver Produto
@@ -354,40 +294,43 @@ export default function MessagesPage() {
 
                     {/* Mensagens */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                      {messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.isFromMe ? 'justify-end' : 'justify-start'}`}
-                        >
+                      {messages.map((message) => {
+                        const isFromMe = isMyMessage(message);
+                        return (
                           <div
-                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                              message.isFromMe
-                                ? 'bg-[#8B6F47] text-white'
-                                : 'bg-[#E8DCC6] text-[#3C3C3C]'
-                            }`}
+                            key={message.id}
+                            className={`flex ${isFromMe ? 'justify-end' : 'justify-start'}`}
                           >
-                            {message.type === 'offer' ? (
-                              <div>
-                                <div className="text-sm font-vintage-subtitle mb-1">
-                                  💰 Oferta: R$ {message.offerAmount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            <div
+                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                                isFromMe
+                                  ? 'bg-[#8B6F47] text-white'
+                                  : 'bg-[#E8DCC6] text-[#3C3C3C]'
+                              }`}
+                            >
+                              {message.type === 'offer' ? (
+                                <div>
+                                  <div className="text-sm font-vintage-subtitle mb-1">
+                                    💰 Oferta: R$ {message.offer_amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </div>
+                                  <div className="text-sm font-vintage-body">
+                                    {message.content}
+                                  </div>
                                 </div>
+                              ) : (
                                 <div className="text-sm font-vintage-body">
                                   {message.content}
                                 </div>
+                              )}
+                              <div className={`text-xs mt-1 ${
+                                isFromMe ? 'text-[#E8DCC6]' : 'text-[#6B4C57]'
+                              }`}>
+                                {formatTime(new Date(message.created_at))}
                               </div>
-                            ) : (
-                              <div className="text-sm font-vintage-body">
-                                {message.content}
-                              </div>
-                            )}
-                            <div className={`text-xs mt-1 ${
-                              message.isFromMe ? 'text-[#E8DCC6]' : 'text-[#6B4C57]'
-                            }`}>
-                              {formatTime(message.timestamp)}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                     {/* Input de nova mensagem */}

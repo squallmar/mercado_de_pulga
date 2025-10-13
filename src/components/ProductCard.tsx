@@ -4,9 +4,9 @@ import { Product } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { isValidImageUrl, formatRating, formatPrice } from '@/lib/utils';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useSession } from 'next-auth/react';
 
 interface ProductCardProps {
   product: Product & {
@@ -19,30 +19,15 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { data: session } = useSession();
   const router = useRouter();
-  const [isFav, setIsFav] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isFav = isFavorite(product.id);
 
-  const toggleFavorite = async () => {
+  const handleToggleFavorite = async () => {
     if (!session) {
       router.push('/auth/login');
       return;
     }
-    try {
-      if (isFav) {
-        const res = await fetch(`/api/favorites?product_id=${encodeURIComponent(product.id)}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Falha ao remover favorito');
-        setIsFav(false);
-      } else {
-        const res = await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ product_id: product.id })
-        });
-        if (!res.ok) throw new Error('Falha ao adicionar favorito');
-        setIsFav(true);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await toggleFavorite(product.id);
   };
   const getConditionColor = (condition: string) => {
     switch (condition) {
@@ -188,7 +173,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleFavorite();
+                handleToggleFavorite();
               }}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill={isFav ? '#D95757' : 'none'} stroke={isFav ? '#D95757' : '#6B4C57'}>

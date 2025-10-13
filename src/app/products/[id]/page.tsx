@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types';
 import { isValidImageUrl } from '@/lib/utils';
+import { useFavorites } from '@/hooks/useFavorites';
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -15,7 +16,8 @@ export default function ProductDetailsPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isProductFavorite = product ? isFavorite(product.id) : false;
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -43,38 +45,46 @@ export default function ProductDetailsPage() {
     }
   }, [params.id, fetchProduct]);
 
-  const toggleFavorite = async () => {
+  const handleToggleFavorite = async () => {
     if (!session) {
       router.push('/auth/login');
       return;
     }
-    try {
-      if (isFavorite) {
-        const res = await fetch(`/api/favorites?product_id=${params.id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Falha ao remover favorito');
-        setIsFavorite(false);
-      } else {
-        const res = await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ product_id: params.id })
-        });
-        if (!res.ok) throw new Error('Falha ao adicionar favorito');
-        setIsFavorite(true);
-      }
-    } catch (e) {
-      console.error(e);
+    if (product) {
+      await toggleFavorite(product.id);
     }
   };
 
-  const handleContact = () => {
+  const handleContact = async () => {
     if (!session) {
       router.push('/auth/login');
       return;
     }
     
-    // TODO: Implementar sistema de mensagens
-    alert('Sistema de mensagens em breve!');
+    if (!product) return;
+
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_id: product.id
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao criar conversa');
+      }
+
+      // Redirecionar para a página de mensagens
+      router.push('/messages');
+    } catch (error) {
+      console.error('Erro ao criar conversa:', error);
+      alert('Erro ao iniciar conversa. Tente novamente.');
+    }
   };
 
   if (loading) {
@@ -173,12 +183,12 @@ export default function ProductDetailsPage() {
                 </div>
                 
                 <button 
-                  onClick={toggleFavorite}
+                  onClick={handleToggleFavorite}
                   className="p-2 rounded-full transition-colors hover:bg-[#E8DCC6]"
                 >
                   <svg 
                     className="w-6 h-6" 
-                    fill={isFavorite ? "#D4AF37" : "none"} 
+                    fill={isProductFavorite ? "#D4AF37" : "none"} 
                     stroke="#D4AF37" 
                     viewBox="0 0 24 24"
                   >
