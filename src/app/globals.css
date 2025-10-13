@@ -101,6 +101,8 @@ body {
   border: 2px solid #E8DCC6;
   border-radius: 8px;
   padding: 12px 16px;
+  /* Deixar espaço extra para ícones à esquerda quando existirem */
+  padding-left: 16px;
   color: #3C3C3C;
   font-family: 'Inter', sans-serif;
   transition: all 0.3s ease;
