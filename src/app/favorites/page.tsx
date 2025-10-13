@@ -152,18 +152,19 @@ export default function FavoritesPage() {
                         alt={product.title}
                         width={300}
                         height={300}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
-                        <Image 
-                          src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`} 
-                          alt="Produto sem imagem"
-                          width={300}
-                          height={300}
-                          className="w-full h-full object-cover opacity-70"
-                        />
+                      <Image 
+                        src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`} 
+                        alt="Produto sem imagem"
+                        width={300}
+                        height={300}
+                        className="w-full h-full object-contain opacity-70"
+                      />
                     );
-                  })()}                  {/* Botão de remover favorito */}
+                  })()}
+                  {/* Botão de remover favorito */}
                   <button
                     onClick={() => removeFavorite(product.id)}
                     className="absolute top-3 right-3 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg"

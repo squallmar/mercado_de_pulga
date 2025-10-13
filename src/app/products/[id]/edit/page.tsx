@@ -156,7 +156,7 @@ export default function EditProductPage() {
                       alt={`img-${idx}`} 
                       width={160} 
                       height={160} 
-                      className="w-full h-32 object-cover rounded" 
+                      className="w-full h-32 object-contain rounded" 
                     />
                     <button type="button" onClick={()=>onRemoveImage(idx)} className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">×</button>
                   </div>

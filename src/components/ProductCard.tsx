@@ -70,7 +70,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 src={validImage}
                 alt={product.title}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-200"
+                className="object-contain group-hover:scale-105 transition-transform duration-200"
               />
             ) : (
               <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#E8DCC6] to-[#F5F1E8]">
@@ -78,7 +78,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     src={`data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="#E8DCC6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6B4C57" font-size="16" font-family="Arial">Sem Imagem</text></svg>')}`}
                     alt="Produto sem imagem"
                     fill
-                    className="object-cover opacity-70"
+                    className="object-contain opacity-70"
                   />
               </div>
             );

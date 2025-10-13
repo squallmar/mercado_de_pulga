@@ -380,7 +380,7 @@ export default function SellPage() {
                       alt={`Preview ${index + 1}`}
                       width={150}
                       height={150}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className="w-full h-32 object-contain rounded-lg"
                     />
                     <button
                       type="button"
