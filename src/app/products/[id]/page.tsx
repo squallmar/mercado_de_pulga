@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Product } from '@/types';
 import { isValidImageUrl } from '@/lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
+import CheckoutModal from '@/components/CheckoutModal';
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -16,6 +17,7 @@ export default function ProductDetailsPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showCheckout, setShowCheckout] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
   const isProductFavorite = product ? isFavorite(product.id) : false;
 
@@ -60,29 +62,21 @@ export default function ProductDetailsPage() {
       router.push('/auth/login');
       return;
     }
-    
     if (!product) return;
 
     try {
       const response = await fetch('/api/conversations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_id: product.id
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id })
       });
-
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Erro ao criar conversa');
       }
-
-      // Redirecionar para a página de mensagens
       router.push('/messages');
-    } catch (error) {
-      console.error('Erro ao criar conversa:', error);
+    } catch (err) {
+      console.error('Erro ao criar conversa:', err);
       alert('Erro ao iniciar conversa. Tente novamente.');
     }
   };
@@ -159,7 +153,8 @@ export default function ProductDetailsPage() {
                   />
                 );
               })()}
-            </div>            {/* Galeria de imagens (placeholder) */}
+            </div>
+            {/* Galeria de imagens (placeholder) */}
             <div className="grid grid-cols-4 gap-2">
               {[1, 2, 3, 4].map((i) => (
                 <div 
@@ -228,33 +223,39 @@ export default function ProductDetailsPage() {
                 Vendedor
               </h3>
               
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8B6F47, #B4735C)' }}>
-                    <span className="text-white font-vintage-subtitle">
-                      V
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-vintage-subtitle text-[#3C3C3C]">Vendedor</p>
-                    <p className="font-vintage-body text-sm text-[#6B4C57]">Membro desde 2024</p>
-                  </div>
-                </div>              <div className="space-y-3">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8B6F47, #B4735C)' }}>
+                  <span className="text-white font-vintage-subtitle">
+                    V
+                  </span>
+                </div>
+                <div>
+                  <p className="font-vintage-subtitle text-[#3C3C3C]">Vendedor</p>
+                  <p className="font-vintage-body text-sm text-[#6B4C57]">Membro desde 2024</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
                 {session?.user?.id === product.seller_id ? (
                   <div className="w-full py-3 px-4 bg-[#E8DCC6] text-[#6B4C57] rounded-lg font-vintage-subtitle text-center">
                     📝 Este é seu produto
                   </div>
                 ) : (
-                  <button 
-                    onClick={handleContact}
-                    className="vintage-button w-full"
-                  >
-                    💬 Entrar em Contato
-                  </button>
+                  <>
+                    <button 
+                      onClick={() => setShowCheckout(true)}
+                      className="vintage-button w-full mb-2"
+                    >
+                      🛒 Comprar Agora
+                    </button>
+                    <button 
+                      onClick={handleContact}
+                      className="w-full py-3 px-4 border-2 border-[#8B6F47] text-[#8B6F47] rounded-lg font-vintage-subtitle hover:bg-[#8B6F47] hover:text-white transition-colors"
+                    >
+                      💬 Entrar em Contato
+                    </button>
+                  </>
                 )}
-                
-                <button className="w-full py-3 px-4 border-2 border-[#8B6F47] text-[#8B6F47] rounded-lg font-vintage-subtitle hover:bg-[#8B6F47] hover:text-white transition-colors">
-                  📱 Ver Telefone
-                </button>
               </div>
             </div>
 
@@ -277,6 +278,15 @@ export default function ProductDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      {product && (
+        <CheckoutModal 
+          product={product}
+          isOpen={showCheckout}
+          onClose={() => setShowCheckout(false)}
+        />
+      )}
     </div>
   );
 }

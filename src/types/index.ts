@@ -73,3 +73,58 @@ export interface Conversation {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface Transaction {
+  id: string;
+  product_id: string;
+  buyer_id: string;
+  seller_id: string;
+  amount: number;
+  platform_fee: number;
+  seller_amount: number;
+  payment_method: 'pix' | 'credit_card' | 'debit_card' | 'boleto';
+  payment_provider: 'mercadopago' | 'stripe' | 'pagseguro';
+  provider_transaction_id?: string;
+  status: 'pending' | 'processing' | 'paid' | 'released' | 'refunded' | 'failed';
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Payment {
+  id: string;
+  transaction_id: string;
+  amount: number;
+  currency: string;
+  payment_method_details: {
+    type: string;
+    pix_qr_code?: string;
+    card_last_digits?: string;
+    installments?: number;
+  };
+    provider_response: Record<string, unknown>;
+  webhook_events: WebhookEvent[];
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface WebhookEvent {
+  id: string;
+  payment_id: string;
+  event_type: string;
+  provider: string;
+    payload: Record<string, unknown>;
+  processed: boolean;
+  created_at: Date;
+}
+
+export interface Dispute {
+  id: string;
+  transaction_id: string;
+  reason: 'item_not_received' | 'item_not_as_described' | 'payment_issue' | 'other';
+  description: string;
+  opened_by: string; // user_id
+  status: 'open' | 'investigating' | 'resolved' | 'closed';
+  resolution?: 'refund_buyer' | 'release_to_seller' | 'partial_refund';
+  created_at: Date;
+  updated_at: Date;
+}

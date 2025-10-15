@@ -31,7 +31,17 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
       }
       
-      return NextResponse.json(result.rows[0]);
+      const product = result.rows[0];
+      // Parsear imagens se estiverem como string JSON
+      if (typeof product.images === 'string') {
+        try {
+          product.images = JSON.parse(product.images);
+        } catch {
+          product.images = [];
+        }
+      }
+      
+      return NextResponse.json(product);
     }
 
     let query = `
@@ -141,7 +151,17 @@ export async function GET(request: NextRequest) {
     const countResult = await client.query(countQuery, countParams);
     client.release();
 
-    const products = result.rows;
+    const products = result.rows.map(product => {
+      // Parsear imagens se estiverem como string JSON
+      if (typeof product.images === 'string') {
+        try {
+          product.images = JSON.parse(product.images);
+        } catch {
+          product.images = [];
+        }
+      }
+      return product;
+    });
     const total = parseInt(countResult.rows[0].total);
     const totalPages = Math.ceil(total / limit);
 

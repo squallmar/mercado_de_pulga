@@ -163,6 +163,17 @@ export default function Navigation() {
                         Mensagens
                       </Link>
                       
+                      {session.user?.email === 'admin@mercadodepulgas.com' && (
+                        <Link 
+                          href="/admin" 
+                          className="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 border-t"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          style={{ borderColor: '#E8DCC6' }}
+                        >
+                          🔧 Admin
+                        </Link>
+                      )}
+                      
                       <button 
                         onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t"
@@ -260,6 +271,16 @@ export default function Navigation() {
                     >
                       Meus Produtos
                     </Link>
+                    
+                    {session.user?.email === 'admin@mercadodepulgas.com' && (
+                      <Link 
+                        href="/admin" 
+                        className="block px-4 py-2 rounded font-vintage-body text-orange-600"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        🔧 Admin
+                      </Link>
+                    )}
                     
                     <button 
                       onClick={handleSignOut}

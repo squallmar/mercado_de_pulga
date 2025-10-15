@@ -9,7 +9,7 @@ Marketplace de segunda mão brasileiro, inspirado no Enjoei. Conectamos pessoas 
 - **Banco de Dados**: PostgreSQL
 - **Autenticação**: NextAuth.js
 - **Upload de Imagens**: Cloudinary
-- **Pagamentos**: Stripe (futuro)
+- **Pagamentos**: Stripe Checkout (PIX + Cartão)
 
 ## Funcionalidades Principais
 

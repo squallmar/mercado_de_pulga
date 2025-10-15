@@ -30,10 +30,13 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Credenciais não fornecidas');
           return null;
         }
 
         try {
+          console.log('🔍 Tentando autenticar:', credentials.email);
+          
           const client = await pool.connect();
           const result = await client.query(
             'SELECT * FROM users WHERE email = $1',
@@ -44,18 +47,27 @@ const handler = NextAuth({
           const user = result.rows[0];
           
           if (!user || !user.password) {
+            console.log('❌ Usuário não encontrado ou sem senha');
             return null;
           }
+
+          console.log('👤 Usuário encontrado:', user.email);
+          console.log('🔐 Hash no banco:', user.password.substring(0, 20) + '...');
+          console.log('🔑 Senha fornecida:', credentials.password);
 
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           );
 
+          console.log('✅ Senha válida:', isPasswordValid);
+
           if (!isPasswordValid) {
+            console.log('❌ Senha inválida');
             return null;
           }
 
+          console.log('✅ Login bem-sucedido para:', user.email);
           return {
             id: user.id,
             email: user.email,
@@ -64,7 +76,7 @@ const handler = NextAuth({
             verified: user.verified
           };
         } catch (error) {
-          console.error("Error during authentication:", error);
+          console.error("❌ Erro durante autenticação:", error);
           return null;
         }
       }
