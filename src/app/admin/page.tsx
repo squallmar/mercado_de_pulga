@@ -636,7 +636,7 @@ function TransactionsTab() {
                 <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">ID</th>
                 <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">Produto</th>
                 <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">Valor</th>
-                <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">Taxa Plataforma</th>
+                <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">Taxa Proteção (4%)</th>
                 <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">Status</th>
                 <th className="text-left font-vintage-subtitle text-[#6B4C57] p-2">Data</th>
               </tr>

@@ -24,7 +24,7 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
 
   if (!isOpen) return null;
 
-  const platformFee = Math.round(product.price * 0.08 * 100) / 100;
+  const platformFee = Math.round(product.price * 0.04 * 100) / 100;
   const totalAmount = product.price;
 
   const handlePayment = async () => {
@@ -142,10 +142,13 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="font-vintage-body text-[#6B4C57]">Taxa da plataforma:</span>
+            <span className="font-vintage-body text-[#6B4C57]">Taxa de proteção da transação:</span>
             <span className="font-vintage-body text-[#6B4C57]">
               R$ {platformFee.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
+          </div>
+          <div className="text-xs text-[#8B6F47] italic mb-2">
+            Taxa de proteção da transação e rastreamento do produto, para que a negociação saia de forma segura.
           </div>
           <div className="border-t border-[#E8DCC6] pt-2 flex justify-between font-vintage-subtitle">
             <span style={{ color: '#3C3C3C' }}>Total:</span>

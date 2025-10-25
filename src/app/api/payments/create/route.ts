@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 import { z } from 'zod';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY as string;
-const PLATFORM_FEE_PERCENTAGE = 0.08; // 8%
+const PLATFORM_FEE_PERCENTAGE = 0.04; // 4% - Taxa de proteção da transação e rastreamento do produto
 
 const stripe = new Stripe(stripeSecret, {
   apiVersion: '2025-09-30.clover',

@@ -3,10 +3,11 @@
 ## Fluxo de Pagamento Proposto
 
 ### 1. Modelo de Negócio
-- **Taxa do Marketplace**: 5-8% por transação
+- **Taxa do Marketplace**: 4% por transação
+- **Finalidade da Taxa**: Taxa de proteção da transação e rastreamento do produto, para que a negociação saia de forma segura
 - **Split Automático**: 
-  - 92-95% para o vendedor
-  - 5-8% para a plataforma
+  - 96% para o vendedor
+  - 4% para a plataforma
 - **Retenção de Pagamento**: 7-14 dias para verificação
 
 ### 2. Métodos de Pagamento
