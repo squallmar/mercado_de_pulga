@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/database';
 import { getToken } from 'next-auth/jwt';
+import { z } from 'zod';
+
+const MessageQuerySchema = z.object({
+  conversation_id: z.string().uuid(),
+});
+
+const MessageSchema = z.object({
+  conversation_id: z.string().uuid(),
+  content: z.string().trim().min(1).max(5000),
+});
 
 // GET /api/messages?conversation_id=... -> lista mensagens de uma conversa
 export async function GET(req: NextRequest) {
@@ -11,10 +21,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const conversation_id = searchParams.get('conversation_id');
-    if (!conversation_id) {
-      return NextResponse.json({ error: 'conversation_id é obrigatório' }, { status: 400 });
+    const parsed = MessageQuerySchema.safeParse({ conversation_id: searchParams.get('conversation_id') });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 });
     }
+    const { conversation_id } = parsed.data;
 
     const client = await pool.connect();
     try {
@@ -55,12 +66,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    const body = await req.json().catch(() => ({}));
-    const { conversation_id, content } = body as { conversation_id?: string; content?: string };
-    
-    if (!conversation_id || !content?.trim()) {
-      return NextResponse.json({ error: 'conversation_id e content são obrigatórios' }, { status: 400 });
+    const raw = await req.json().catch(() => ({}));
+    const parsed = MessageSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 });
     }
+    const { conversation_id, content } = parsed.data;
 
     const client = await pool.connect();
     try {

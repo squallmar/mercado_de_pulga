@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import EditUserModal from '@/components/EditUserModal';
+import { getCsrfToken } from '@/lib/csrf';
 
 interface RecentUser {
   id: string;
@@ -75,7 +76,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (status === 'loading') return;
     
-    if (!session?.user?.email || session.user.email !== 'admin@mercadodepulgas.com') {
+    if (!session?.user?.role || session.user.role !== 'admin') {
       router.push('/');
       return;
     }
@@ -108,7 +109,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!session?.user?.email || session.user.email !== 'admin@mercadodepulgas.com') {
+  if (!session?.user?.role || session.user.role !== 'admin') {
     return null;
   }
 
@@ -309,10 +310,12 @@ function UsersTab() {
   const toggleUserVerification = async (userId: string, currentVerified: boolean) => {
     setEditingUser(userId);
     try {
+      const csrf = getCsrfToken();
       const response = await fetch(`/api/admin/users?id=${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(csrf ? { 'x-csrf-token': csrf } : {}),
         },
         body: JSON.stringify({
           verified: !currentVerified
@@ -481,8 +484,12 @@ function ProductsTab() {
   const handleRemoveProduct = async (productId: string, productTitle: string) => {
     if (confirm(`Tem certeza que deseja remover o produto "${productTitle}"?`)) {
       try {
+        const csrf = getCsrfToken();
         const response = await fetch(`/api/admin/products?id=${productId}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+            ...(csrf ? { 'x-csrf-token': csrf } : {}),
+          },
         });
 
         if (response.ok) {

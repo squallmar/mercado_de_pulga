@@ -41,15 +41,16 @@ async function createAdminUser() {
         // Criar novo usuário admin
         const adminId = randomUUID();
         const result = await client.query(`
-          INSERT INTO users (id, name, email, password, verified, created_at, updated_at)
-          VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+          INSERT INTO users (id, name, email, password, verified, role, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
           RETURNING id, name, email
         `, [
           adminId,
           'Administrador',
           'admin@mercadodepulgas.com',
           hashedPassword,
-          true
+          true,
+          'admin'
         ]);
         
         console.log('✅ Usuário admin criado com sucesso!');

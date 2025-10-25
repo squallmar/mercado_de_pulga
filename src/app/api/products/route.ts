@@ -1,5 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/database';
+import { z } from 'zod';
+
+const ProductCreateSchema = z.object({
+  title: z.string().min(3).max(255),
+  description: z.string().min(10).max(10_000),
+  price: z.number().positive().max(1_000_000),
+  condition: z.enum(['novo', 'seminovo', 'usado', 'para_pecas']),
+  category_id: z.string().uuid(),
+  seller_id: z.string().uuid(),
+  images: z.array(z.string().url()).max(10).optional(),
+  location: z.string().max(255).optional().nullable(),
+  tags: z.array(z.string().min(1).max(30)).max(20).optional(),
+});
+
+const ProductUpdateSchema = z.object({
+  title: z.string().min(3).max(255).optional(),
+  description: z.string().min(10).max(10_000).optional(),
+  price: z.number().positive().max(1_000_000).optional(),
+  location: z.string().max(255).optional().nullable(),
+  images: z.array(z.string().url()).max(10).optional(),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -187,26 +208,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const {
-      title,
-      description,
-      price,
-      condition,
-      category_id,
-      seller_id,
-      images,
-      location,
-      tags
-    } = body;
-
-    // Validação básica
-    if (!title || !description || !price || !condition || !category_id || !seller_id) {
-      return NextResponse.json(
-        { error: 'Campos obrigatórios não preenchidos' },
-        { status: 400 }
-      );
+    const raw = await request.json();
+    const parse = ProductCreateSchema.safeParse({
+      ...raw,
+      price: typeof raw?.price === 'string' ? Number(raw.price) : raw?.price,
+    });
+    if (!parse.success) {
+      return NextResponse.json({ error: 'Dados inválidos', details: parse.error.flatten() }, { status: 400 });
     }
+    const { title, description, price, condition, category_id, seller_id, images, location, tags } = parse.data;
 
     const client = await pool.connect();
     
@@ -248,12 +258,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ID do produto é obrigatório' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { title, description, price, location, images } = body as {
+    const raw = await request.json();
+    const parsed = ProductUpdateSchema.safeParse({
+      ...raw,
+      price: typeof raw?.price === 'string' ? Number(raw.price) : raw?.price,
+    });
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 });
+    }
+    const { title, description, price, location, images } = parsed.data as {
       title?: string;
       description?: string;
       price?: number;
-      location?: string;
+      location?: string | null;
       images?: string[];
     };
 
@@ -265,7 +282,7 @@ export async function PUT(request: NextRequest) {
     if (title !== undefined) { fields.push(`title = $${idx++}`); params.push(title); }
     if (description !== undefined) { fields.push(`description = $${idx++}`); params.push(description); }
     if (price !== undefined) { fields.push(`price = $${idx++}`); params.push(price); }
-    if (location !== undefined) { fields.push(`location = $${idx++}`); params.push(location); }
+  if (location !== undefined) { fields.push(`location = $${idx++}`); params.push(location ?? ''); }
     if (images !== undefined) { fields.push(`images = $${idx++}`); params.push(JSON.stringify(images)); }
 
     if (fields.length === 0) {

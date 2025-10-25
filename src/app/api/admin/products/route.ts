@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     
     // Verificar se é admin
-    if (!token?.email || token.email !== 'admin@mercadodepulgas.com') {
+    if (!token?.role || token.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -91,7 +91,7 @@ export async function PUT(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     
     // Verificar se é admin
-    if (!token?.email || token.email !== 'admin@mercadodepulgas.com') {
+    if (!token?.role || token.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -119,6 +119,13 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
       }
 
+      // Audit log
+      await client.query(
+        `INSERT INTO admin_audit_logs (admin_id, action, entity, entity_id, details)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [token.id, 'update', 'product', productId, JSON.stringify({ status })]
+      );
+
       return NextResponse.json(result.rows[0]);
     } finally {
       client.release();
@@ -137,7 +144,7 @@ export async function DELETE(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     
     // Verificar se é admin
-    if (!token?.email || token.email !== 'admin@mercadodepulgas.com') {
+    if (!token?.role || token.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -162,6 +169,13 @@ export async function DELETE(request: NextRequest) {
       if (result.rows.length === 0) {
         return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
       }
+
+      // Audit log
+      await client.query(
+        `INSERT INTO admin_audit_logs (admin_id, action, entity, entity_id, details)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [token.id, 'delete', 'product', productId, JSON.stringify({ title: result.rows[0].title })]
+      );
 
       return NextResponse.json({ message: 'Produto removido com sucesso' });
     } finally {

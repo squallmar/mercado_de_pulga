@@ -1,26 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/database';
 import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+
+const RegisterSchema = z.object({
+  name: z.string().min(2).max(255),
+  email: z.string().email().max(255),
+  password: z.string().min(6).max(255),
+  phone: z.string().max(20).optional().nullable(),
+  location: z.string().max(255).optional().nullable(),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, phone, location } = body;
+    const parsed = RegisterSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 });
+    }
+    const { name, email, password, phone, location } = parsed.data;
 
     // Validações básicas
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: 'Nome, email e senha são obrigatórios' },
-        { status: 400 }
-      );
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'A senha deve ter pelo menos 6 caracteres' },
-        { status: 400 }
-      );
-    }
+    // Regra já coberta pelo Zod (mínimo e formato)
 
     // Verificar se o email já existe
     const client = await pool.connect();

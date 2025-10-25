@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Product } from '@/types';
 import { isValidImageUrl } from '@/lib/utils';
+import { getCsrfToken } from '@/lib/csrf';
 
 interface CheckoutModalProps {
   product: Product;
@@ -34,10 +35,12 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
 
     setLoading(true);
     try {
+      const csrf = getCsrfToken();
       const response = await fetch('/api/payments/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(csrf ? { 'x-csrf-token': csrf } : {}),
         },
         body: JSON.stringify({ product_id: product.id }),
       });

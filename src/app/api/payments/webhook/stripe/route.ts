@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import pool from '@/lib/database';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2024-06-20' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2025-09-30.clover' });
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 export async function POST(req: NextRequest) {
@@ -22,6 +22,23 @@ export async function POST(req: NextRequest) {
   try {
     const client = await pool.connect();
     try {
+      // Idempotência: ignore se evento já processado
+      const evtId = event.id;
+      const exists = await client.query(
+        `SELECT id FROM webhook_events WHERE payment_id = $1 AND provider = $2 AND event_type = $3 AND processed = true`,
+        [evtId, 'stripe', event.type]
+      );
+      if (exists.rows.length > 0) {
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+
+      // Registrar evento como não processado ainda
+      await client.query(
+        `INSERT INTO webhook_events (payment_id, event_type, provider, payload, processed) VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT DO NOTHING`,
+        [evtId, event.type, 'stripe', JSON.stringify(event), false]
+      );
+
       switch (event.type) {
         case 'checkout.session.completed': {
           const session = event.data.object as Stripe.Checkout.Session;
@@ -43,6 +60,8 @@ export async function POST(req: NextRequest) {
           // ignore outros eventos por enquanto
           break;
       }
+      // Marcar evento como processado
+      await client.query('UPDATE webhook_events SET processed = true WHERE payment_id = $1 AND provider = $2 AND event_type = $3', [event.id, 'stripe', event.type]);
     } finally {
       client.release();
     }

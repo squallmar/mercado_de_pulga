@@ -7,6 +7,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     verified: boolean;
+    role?: 'admin' | 'user';
   }
   
   interface Session {
@@ -16,7 +17,16 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       verified: boolean;
+      role?: 'admin' | 'user';
     };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    verified: boolean;
+    role?: 'admin' | 'user';
   }
 }
 
@@ -51,29 +61,35 @@ const handler = NextAuth({
             return null;
           }
 
-          console.log('👤 Usuário encontrado:', user.email);
-          console.log('🔐 Hash no banco:', user.password.substring(0, 20) + '...');
-          console.log('🔑 Senha fornecida:', credentials.password);
+          // Em produção, evite logs sensíveis
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('� Usuário encontrado:', user.email);
+          }
 
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           );
 
-          console.log('✅ Senha válida:', isPasswordValid);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('✅ Senha válida:', isPasswordValid);
+          }
 
           if (!isPasswordValid) {
             console.log('❌ Senha inválida');
             return null;
           }
 
-          console.log('✅ Login bem-sucedido para:', user.email);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('✅ Login bem-sucedido para:', user.email);
+          }
           return {
             id: user.id,
             email: user.email,
             name: user.name,
             image: user.avatar,
-            verified: user.verified
+            verified: user.verified,
+            role: user.role || 'user'
           };
         } catch (error) {
           console.error("❌ Erro durante autenticação:", error);
@@ -90,6 +106,7 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id;
         token.verified = user.verified;
+  token.role = user.role || 'user';
       }
       return token;
     },
@@ -97,6 +114,7 @@ const handler = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.verified = token.verified as boolean;
+  session.user.role = (token.role as 'admin' | 'user') || 'user';
       }
       return session;
     }

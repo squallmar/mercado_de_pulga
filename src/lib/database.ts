@@ -22,10 +22,24 @@ export async function createTables() {
         phone VARCHAR(20),
         location VARCHAR(255),
         rating DECIMAL(2,1) DEFAULT 0,
+        role VARCHAR(20) NOT NULL DEFAULT 'user',
         verified BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
+    `);
+
+    // Garantir coluna role caso a tabela já exista sem ela
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='users' AND column_name='role'
+        ) THEN
+          ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user';
+        END IF;
+      END$$;
     `);
 
     // Tabela de categorias
@@ -106,6 +120,19 @@ export async function createTables() {
         sender_id UUID REFERENCES users(id),
         content TEXT NOT NULL,
         type VARCHAR(20) DEFAULT 'text' CHECK (type IN ('text', 'image', 'offer')),
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Tabela de logs administrativos
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS admin_audit_logs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        admin_id UUID NOT NULL REFERENCES users(id),
+        action VARCHAR(50) NOT NULL,
+        entity VARCHAR(50) NOT NULL,
+        entity_id UUID,
+        details JSONB,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);

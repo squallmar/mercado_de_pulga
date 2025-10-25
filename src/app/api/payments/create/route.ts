@@ -2,23 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import pool from '@/lib/database';
 import Stripe from 'stripe';
+import { z } from 'zod';
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY as string;
-const STRIPE_WEBHOOK_URL = `${process.env.NEXTAUTH_URL}/api/payments/webhook/stripe`;
 const PLATFORM_FEE_PERCENTAGE = 0.08; // 8%
 
 const stripe = new Stripe(stripeSecret, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-09-30.clover',
 });
 
 // POST /api/payments/create -> cria uma Stripe Checkout Session e retorna a URL
+const CreatePaymentSchema = z.object({
+  product_id: z.string().uuid(),
+});
+
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token?.id) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
 
-    const { product_id } = await req.json();
-    if (!product_id) return NextResponse.json({ error: 'product_id é obrigatório' }, { status: 400 });
+    const parsed = CreatePaymentSchema.safeParse(await req.json());
+    if (!parsed.success) return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 });
+    const { product_id } = parsed.data;
 
     const client = await pool.connect();
     try {

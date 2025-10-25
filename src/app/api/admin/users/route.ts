@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     
     // Verificar se é admin
-    if (!token?.email || token.email !== 'admin@mercadodepulgas.com') {
+    if (!token?.role || token.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -56,7 +56,7 @@ export async function PUT(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     
     // Verificar se é admin
-    if (!token?.email || token.email !== 'admin@mercadodepulgas.com') {
+    if (!token?.role || token.role !== 'admin') {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -83,6 +83,13 @@ export async function PUT(request: NextRequest) {
       if (result.rows.length === 0) {
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
       }
+
+      // Audit log
+      await client.query(
+        `INSERT INTO admin_audit_logs (admin_id, action, entity, entity_id, details)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [token.id, 'update', 'user', userId, JSON.stringify({ verified })]
+      );
 
       return NextResponse.json(result.rows[0]);
     } finally {
