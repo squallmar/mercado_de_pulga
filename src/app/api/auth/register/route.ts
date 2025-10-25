@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/database';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import crypto from 'crypto';
+import { sendVerificationEmail } from '@/lib/email';
 
 const RegisterSchema = z.object({
   name: z.string().min(2).max(255),
@@ -42,18 +44,32 @@ export async function POST(request: NextRequest) {
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Gerar token de verificação
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date();
+    verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 horas
+
     // Criar usuário
     const result = await client.query(`
-      INSERT INTO users (name, email, password, phone, location)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO users (name, email, password, phone, location, email_verification_token, email_verification_expires)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id, name, email, phone, location, verified, created_at
-    `, [name, email, hashedPassword, phone || null, location || null]);
+    `, [name, email, hashedPassword, phone || null, location || null, verificationToken, verificationExpires]);
 
     client.release();
 
     const user = result.rows[0];
 
+    // Enviar e-mail de verificação
+    try {
+      await sendVerificationEmail(email, verificationToken, name);
+    } catch (emailError) {
+      console.error('Erro ao enviar e-mail de verificação:', emailError);
+      // Não falhar o registro se o e-mail falhar
+    }
+
     return NextResponse.json({
+      message: 'Usuário cadastrado com sucesso! Verifique seu e-mail para ativar sua conta.',
       user: {
         id: user.id,
         name: user.name,

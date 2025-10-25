@@ -19,13 +19,13 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "base-uri 'self'",
       "object-src 'none'",
-      // Allow Stripe and Cloudinary where needed; keep dev-friendly inline allowances
+      // Allow Stripe, Cloudinary, Sentry where needed; keep dev-friendly inline allowances
       "img-src 'self' data: blob: https://res.cloudinary.com",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       // Next.js dev overlay and some libs may need eval/inline in development
       `script-src 'self' https://js.stripe.com ${isDev ? "'unsafe-inline' 'unsafe-eval'" : ""}`.trim(),
-      "connect-src 'self' https://api.stripe.com",
+      "connect-src 'self' https://api.stripe.com https://*.sentry.io",
       "frame-src 'self' https://js.stripe.com",
       // Upgrade to HTTPS in production
       ...(isDev ? [] : ["upgrade-insecure-requests"]),
