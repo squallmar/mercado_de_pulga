@@ -1,8 +1,7 @@
-import type { NextConfig } from "next";
-
 const isDev = process.env.NODE_ENV !== 'production';
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -13,21 +12,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   async headers() {
-    // Security headers applied to all routes
     const csp = [
       "default-src 'self'",
       "base-uri 'self'",
       "object-src 'none'",
-      // Allow Stripe, Cloudinary, Sentry where needed; keep dev-friendly inline allowances
       "img-src 'self' data: blob: https://res.cloudinary.com",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
-      // Next.js dev overlay and some libs may need eval/inline in development
       `script-src 'self' https://js.stripe.com ${isDev ? "'unsafe-inline' 'unsafe-eval'" : ""}`.trim(),
       "connect-src 'self' https://api.stripe.com https://*.sentry.io",
       "frame-src 'self' https://js.stripe.com",
-      // Upgrade to HTTPS in production
       ...(isDev ? [] : ["upgrade-insecure-requests"]),
     ].join('; ');
 
@@ -36,8 +32,7 @@ const nextConfig: NextConfig = {
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'X-Frame-Options', value: 'DENY' },
-      { key: 'X-XSS-Protection', value: '0' }, // modern browsers rely on CSP
-      // Only enable HSTS in production and when served over HTTPS
+      { key: 'X-XSS-Protection', value: '0' },
       ...(isDev
         ? []
         : [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }]),
@@ -52,4 +47,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
