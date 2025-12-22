@@ -14,6 +14,15 @@ const nextConfig = {
   },
 
   async headers() {
+    // HASHES dos scripts inline que seu formulário precisa
+    const inlineHashes = [
+      "'sha256-Q+8tPsjVtiDsjF/Cv8FMOpg2Yg91oKFKDAJat1PPb2g='",
+      "'sha256-S32hxrqsLARb6e96pPgdB2P8VG8XkvFWBxXgWXvHSvA='", 
+      "'sha256-8hO7tSoXJlYIvXcoxgo3D4Xjp4+7fdYOVXDaXwoJNas='",
+      "'sha256-WCLn6a4Ggtjf0UQn/QCh7Dp1vtLUDGrT9VW0JnBGkUY='",
+      "'sha256-PMBAusH2+D4DYf0z2icL9VfFoDzq6XWYaGPjUw6MVGk='"
+    ].join(' ');
+
     const csp = [
       "default-src 'self'",
       "base-uri 'self'",
@@ -21,7 +30,8 @@ const nextConfig = {
       "img-src 'self' data: blob: https://res.cloudinary.com",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
-      `script-src 'self' https://js.stripe.com ${isDev ? "'unsafe-inline' 'unsafe-eval'" : ""}`.trim(),
+      // ATUALIZADO: Adiciona hashes para produção
+      `script-src 'self' https://js.stripe.com ${isDev ? "'unsafe-inline' 'unsafe-eval'" : inlineHashes}`.trim(),
       "connect-src 'self' https://api.stripe.com https://*.sentry.io",
       "frame-src 'self' https://js.stripe.com",
       ...(isDev ? [] : ["upgrade-insecure-requests"]),
