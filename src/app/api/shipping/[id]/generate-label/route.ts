@@ -3,18 +3,27 @@ import { getToken } from 'next-auth/jwt';
 import pool from '@/lib/database';
 import { addToCart, checkout, generateLabel, printLabel } from '@/lib/melhorenvio';
 
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteContext
 ) {
   try {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
     if (!token?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const client = await pool.connect();
 
     try {
@@ -56,17 +65,19 @@ export async function POST(
       }
 
       // Preparar dados para Melhor Envio
-      const fromAddress = typeof shipment.from_address === 'string' 
-        ? JSON.parse(shipment.from_address) 
-        : shipment.from_address;
-      
-      const toAddress = typeof shipment.to_address === 'string'
-        ? JSON.parse(shipment.to_address)
-        : shipment.to_address;
+      const fromAddress =
+        typeof shipment.from_address === 'string'
+          ? JSON.parse(shipment.from_address)
+          : shipment.from_address;
+
+      const toAddress =
+        typeof shipment.to_address === 'string'
+          ? JSON.parse(shipment.to_address)
+          : shipment.to_address;
 
       // Adicionar ao carrinho do Melhor Envio
       const cartItem = {
-        service: parseInt(shipment.service_name || '1'), // ID do serviço (PAC, SEDEX, etc.)
+        service: Number(shipment.service_name ?? 1),
         from: {
           name: shipment.seller_name,
           phone: shipment.seller_phone || '11999999999',
@@ -96,17 +107,17 @@ export async function POST(
           postal_code: toAddress.postal_code.replace(/\D/g, ''),
         },
         package: {
-          weight: parseFloat(shipment.package_weight),
+          weight: Number(shipment.package_weight),
           width: shipment.package_width,
           height: shipment.package_height,
           length: shipment.package_length,
-          insurance_value: parseFloat(shipment.price),
+          insurance_value: Number(shipment.price),
         },
         products: [
           {
             name: shipment.product_title,
             quantity: 1,
-            unitary_value: parseFloat(shipment.price),
+            unitary_value: Number(shipment.price),
           },
         ],
       };
@@ -114,25 +125,30 @@ export async function POST(
       // Adicionar ao carrinho
       const cart = await addToCart(cartItem);
 
-      // Fazer checkout
+      // Checkout
       const purchase = await checkout([cart.id]);
 
       // Gerar etiqueta
       await generateLabel([purchase.purchase.id]);
 
-      // Imprimir (obter URL do PDF)
+      // Obter PDF da etiqueta
       const label = await printLabel([purchase.purchase.id]);
 
-      // Atualizar shipment com tracking code e label URL
+      // Atualizar envio
       await client.query(
-        `UPDATE shipments 
-         SET melhor_envio_order_id = $1, 
+        `UPDATE shipments
+         SET melhor_envio_order_id = $1,
              tracking_code = $2,
              label_url = $3,
              status = 'label_generated',
              updated_at = NOW()
          WHERE id = $4`,
-        [purchase.purchase.id, purchase.purchase.protocol, label.url, id]
+        [
+          purchase.purchase.id,
+          purchase.purchase.protocol,
+          label.url,
+          id,
+        ]
       );
 
       return NextResponse.json({
