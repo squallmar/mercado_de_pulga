@@ -3,18 +3,27 @@ import { getToken } from 'next-auth/jwt';
 import pool from '@/lib/database';
 import { trackShipment } from '@/lib/melhorenvio';
 
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteContext
 ) {
   try {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
     if (!token?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const client = await pool.connect();
 
     try {
@@ -38,9 +47,10 @@ export async function GET(
 
       // Se não tiver tracking code, retornar apenas status local
       if (!shipment.melhor_envio_order_id) {
-        const events = typeof shipment.tracking_events === 'string'
-          ? JSON.parse(shipment.tracking_events)
-          : shipment.tracking_events || [];
+        const events =
+          typeof shipment.tracking_events === 'string'
+            ? JSON.parse(shipment.tracking_events)
+            : shipment.tracking_events || [];
 
         return NextResponse.json({
           tracking_code: shipment.tracking_code || 'N/A',
@@ -54,20 +64,25 @@ export async function GET(
       try {
         const tracking = await trackShipment(shipment.melhor_envio_order_id);
 
-        // Atualizar eventos no banco
-        const formattedEvents = tracking.occurrences.map((occ: { date: string; description: string; location?: string }) => ({
-          date: occ.date,
-          description: occ.description,
-          location: occ.location || '',
-        }));
+        const formattedEvents = tracking.occurrences.map(
+          (occ: { date: string; description: string; location?: string }) => ({
+            date: occ.date,
+            description: occ.description,
+            location: occ.location || '',
+          })
+        );
 
         await client.query(
-          `UPDATE shipments 
-           SET tracking_events = $1, 
+          `UPDATE shipments
+           SET tracking_events = $1,
                status = $2,
                updated_at = NOW()
            WHERE id = $3`,
-          [JSON.stringify(formattedEvents), tracking.status || shipment.status, id]
+          [
+            JSON.stringify(formattedEvents),
+            tracking.status || shipment.status,
+            id,
+          ]
         );
 
         return NextResponse.json({
@@ -78,11 +93,11 @@ export async function GET(
         });
       } catch (trackError) {
         console.error('Erro ao rastrear no Melhor Envio:', trackError);
-        
-        // Retornar dados locais se falhar
-        const events = typeof shipment.tracking_events === 'string'
-          ? JSON.parse(shipment.tracking_events)
-          : shipment.tracking_events || [];
+
+        const events =
+          typeof shipment.tracking_events === 'string'
+            ? JSON.parse(shipment.tracking_events)
+            : shipment.tracking_events || [];
 
         return NextResponse.json({
           tracking_code: shipment.tracking_code,
