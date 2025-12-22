@@ -3,6 +3,10 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
 
+type FavoriteProduct = {
+  id: string;
+};
+
 export function useFavorites() {
   const { data: session } = useSession();
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -13,13 +17,17 @@ export function useFavorites() {
       setFavoriteIds(new Set());
       return;
     }
-    
+
     setLoading(true);
     try {
       const res = await fetch('/api/favorites');
       if (res.ok) {
         const data = await res.json();
-        const ids = new Set((data.products || []).map((p: any) => p.id));
+
+        const ids = new Set(
+          ((data.products ?? []) as FavoriteProduct[]).map(p => p.id)
+        );
+
         setFavoriteIds(ids);
       }
     } catch (error) {
@@ -37,9 +45,9 @@ export function useFavorites() {
 
   const toggleFavorite = async (productId: string) => {
     if (!session) return false;
-    
+
     const wasFavorite = favoriteIds.has(productId);
-    
+
     // Optimistic update
     const newFavorites = new Set(favoriteIds);
     if (wasFavorite) {
@@ -51,9 +59,10 @@ export function useFavorites() {
 
     try {
       if (wasFavorite) {
-        const res = await fetch(`/api/favorites?product_id=${encodeURIComponent(productId)}`, { 
-          method: 'DELETE' 
-        });
+        const res = await fetch(
+          `/api/favorites?product_id=${encodeURIComponent(productId)}`,
+          { method: 'DELETE' }
+        );
         if (!res.ok) throw new Error('Failed to remove favorite');
       } else {
         const res = await fetch('/api/favorites', {
