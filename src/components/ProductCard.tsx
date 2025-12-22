@@ -3,7 +3,9 @@
 import { Product } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { isValidImageUrl, formatRating, formatPrice } from '@/lib/utils';
+import { isValidImageUrl, formatRating } from '@/lib/utils';
+import { useCurrency } from './CurrencyProvider';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useRouter } from 'next/navigation';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSession } from 'next-auth/react';
@@ -20,6 +22,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { formatFromBRL } = useCurrency();
+  const { t } = useI18n();
   const isFav = isFavorite(product.id);
 
   const handleToggleFavorite = async () => {
@@ -44,20 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
-  const getConditionLabel = (condition: string) => {
-    switch (condition) {
-      case 'novo':
-        return 'Novo';
-      case 'seminovo':
-        return 'Seminovo';
-      case 'usado':
-        return 'Usado';
-      case 'para_pecas':
-        return 'Para peças';
-      default:
-        return condition;
-    }
-  };
+  const getConditionLabel = (condition: string) => t(`condition.${condition}`);
 
   const images = (() => {
     let imgs: string[] = [];
@@ -122,7 +113,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.title}
             </h3>
             <p className="text-2xl font-vintage-title" style={{ color: '#8B6F47' }}>
-              {formatPrice(product.price)}
+              {formatFromBRL(product.price)}
             </p>
           </div>
 

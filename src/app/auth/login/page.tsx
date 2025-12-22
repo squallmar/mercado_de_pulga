@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,27 +42,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" style={{ background: 'linear-gradient(135deg, #F5F1E8 0%, #E8DCC6 100%)' }}>
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen flex flex-col justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8" style={{ background: 'linear-gradient(135deg, #F5F1E8 0%, #E8DCC6 100%)' }}>
+      <div className="mx-auto w-full max-w-sm sm:max-w-md">
         <div className="text-center">
-          <h1 className="font-vintage-title text-3xl" style={{ color: '#8B6F47' }}>Mercado de Pulga</h1>
-          <h2 className="mt-6 text-center text-3xl font-vintage-subtitle" style={{ color: '#3C3C3C' }}>Entre na sua conta</h2>
+          <h1 className="font-vintage-title text-2xl sm:text-3xl" style={{ color: '#8B6F47' }}>Mercado de Pulga</h1>
+          <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-vintage-subtitle" style={{ color: '#3C3C3C' }}>{t('login.title')}</h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{' '}
+            {t('nav.or') ?? 'Ou'}{' '}
             <Link
               href="/auth/register"
               className="font-vintage-body hover:underline"
               style={{ color: '#8B6F47' }}
             >
-              crie uma conta grátis
+              {t('login.toRegister')}
             </Link>
           </p>
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="vintage-card py-8 px-4 sm:rounded-lg sm:px-10">
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="mt-6 sm:mt-8 mx-auto w-full max-w-sm sm:max-w-md">
+        <div className="vintage-card py-6 sm:py-8 px-4 sm:rounded-lg sm:px-10">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             {error && (
               <div className="px-4 py-3 rounded-md text-sm" style={{ background: '#FDF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
                 {error}
@@ -69,7 +71,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
-                Email
+                {t('login.email')}
               </label>
               <div className="mt-1">
                 <input
@@ -88,7 +90,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-vintage-subtitle" style={{ color: '#3C3C3C' }}>
-                Senha
+                {t('login.password')}
               </label>
               <div className="mt-1">
                 <input
@@ -114,13 +116,13 @@ export default function LoginPage() {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Lembrar de mim
+                  {t('login.remember')}
                 </label>
               </div>
 
               <div className="text-sm">
                 <a href="#" className="font-vintage-body hover:underline" style={{ color: '#8B6F47' }}>
-                  Esqueceu a senha?
+                  {t('login.forgot')}
                 </a>
               </div>
             </div>
@@ -140,7 +142,7 @@ export default function LoginPage() {
                     Entrando...
                   </>
                 ) : (
-                  'Entrar'
+                  t('login.submit')
                 )}
               </button>
             </div>
@@ -152,7 +154,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Ou continue com</span>
+                <span className="px-2 bg-white text-gray-500">{t('login.orContinue')}</span>
               </div>
             </div>
 

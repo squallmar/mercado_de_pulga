@@ -12,6 +12,12 @@ const ProductCreateSchema = z.object({
   images: z.array(z.string().url()).max(10).optional(),
   location: z.string().max(255).optional().nullable(),
   tags: z.array(z.string().min(1).max(30)).max(20).optional(),
+  shipping_weight: z.number().positive().nullable().optional(),
+  shipping_height: z.number().int().positive().nullable().optional(),
+  shipping_width: z.number().int().positive().nullable().optional(),
+  shipping_length: z.number().int().positive().nullable().optional(),
+  local_pickup: z.boolean().optional(),
+  free_shipping: z.boolean().optional(),
 });
 
 const ProductUpdateSchema = z.object({
@@ -20,6 +26,12 @@ const ProductUpdateSchema = z.object({
   price: z.number().positive().max(1_000_000).optional(),
   location: z.string().max(255).optional().nullable(),
   images: z.array(z.string().url()).max(10).optional(),
+  shipping_weight: z.number().positive().nullable().optional(),
+  shipping_height: z.number().int().positive().nullable().optional(),
+  shipping_width: z.number().int().positive().nullable().optional(),
+  shipping_length: z.number().int().positive().nullable().optional(),
+  local_pickup: z.boolean().optional(),
+  free_shipping: z.boolean().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -216,13 +228,16 @@ export async function POST(request: NextRequest) {
     if (!parse.success) {
       return NextResponse.json({ error: 'Dados inválidos', details: parse.error.flatten() }, { status: 400 });
     }
-    const { title, description, price, condition, category_id, seller_id, images, location, tags } = parse.data;
+    const { title, description, price, condition, category_id, seller_id, images, location, tags, shipping_weight, shipping_height, shipping_width, shipping_length, local_pickup, free_shipping } = parse.data;
 
     const client = await pool.connect();
     
     const query = `
-      INSERT INTO products (title, description, price, condition, category_id, seller_id, images, location, tags, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'disponivel')
+      INSERT INTO products (
+        title, description, price, condition, category_id, seller_id, images, location, tags, status,
+        shipping_weight, shipping_height, shipping_width, shipping_length, local_pickup, free_shipping
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'disponivel', $10, $11, $12, $13, $14, $15)
       RETURNING *
     `;
     
@@ -235,7 +250,13 @@ export async function POST(request: NextRequest) {
       seller_id,
       JSON.stringify(images || []),
       location,
-      JSON.stringify(tags || [])
+      JSON.stringify(tags || []),
+      shipping_weight,
+      shipping_height,
+      shipping_width,
+      shipping_length,
+      local_pickup || false,
+      free_shipping || false,
     ]);
     
     client.release();
@@ -266,17 +287,23 @@ export async function PUT(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 });
     }
-    const { title, description, price, location, images } = parsed.data as {
+    const { title, description, price, location, images, shipping_weight, shipping_height, shipping_width, shipping_length, local_pickup, free_shipping } = parsed.data as {
       title?: string;
       description?: string;
       price?: number;
       location?: string | null;
       images?: string[];
+      shipping_weight?: number | null;
+      shipping_height?: number | null;
+      shipping_width?: number | null;
+      shipping_length?: number | null;
+      local_pickup?: boolean;
+      free_shipping?: boolean;
     };
 
   const client = await pool.connect();
   const fields: string[] = [];
-  const params: (string | number)[] = [];
+  const params: (string | number | boolean | null)[] = [];
     let idx = 1;
 
     if (title !== undefined) { fields.push(`title = $${idx++}`); params.push(title); }
@@ -284,6 +311,12 @@ export async function PUT(request: NextRequest) {
     if (price !== undefined) { fields.push(`price = $${idx++}`); params.push(price); }
   if (location !== undefined) { fields.push(`location = $${idx++}`); params.push(location ?? ''); }
     if (images !== undefined) { fields.push(`images = $${idx++}`); params.push(JSON.stringify(images)); }
+    if (shipping_weight !== undefined) { fields.push(`shipping_weight = $${idx++}`); params.push(shipping_weight); }
+    if (shipping_height !== undefined) { fields.push(`shipping_height = $${idx++}`); params.push(shipping_height); }
+    if (shipping_width !== undefined) { fields.push(`shipping_width = $${idx++}`); params.push(shipping_width); }
+    if (shipping_length !== undefined) { fields.push(`shipping_length = $${idx++}`); params.push(shipping_length); }
+    if (local_pickup !== undefined) { fields.push(`local_pickup = $${idx++}`); params.push(local_pickup); }
+    if (free_shipping !== undefined) { fields.push(`free_shipping = $${idx++}`); params.push(free_shipping); }
 
     if (fields.length === 0) {
       client.release();

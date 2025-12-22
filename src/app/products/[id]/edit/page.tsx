@@ -24,6 +24,14 @@ export default function EditProductPage() {
   const [location, setLocation] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  
+  // Dimensões de envio
+  const [shippingWeight, setShippingWeight] = useState('');
+  const [shippingHeight, setShippingHeight] = useState('');
+  const [shippingWidth, setShippingWidth] = useState('');
+  const [shippingLength, setShippingLength] = useState('');
+  const [localPickup, setLocalPickup] = useState(false);
+  const [freeShipping, setFreeShipping] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -42,6 +50,15 @@ export default function EditProductPage() {
         setDescription(data.description);
         setPrice(String(data.price));
         setLocation(data.location || '');
+        
+        // Carregar dimensões de envio
+        setShippingWeight(data.shipping_weight ? String(data.shipping_weight) : '');
+        setShippingHeight(data.shipping_height ? String(data.shipping_height) : '');
+        setShippingWidth(data.shipping_width ? String(data.shipping_width) : '');
+        setShippingLength(data.shipping_length ? String(data.shipping_length) : '');
+        setLocalPickup(data.local_pickup || false);
+        setFreeShipping(data.free_shipping || false);
+        
         let imgs: string[] = [];
         if (Array.isArray(data.images)) {
           imgs = data.images as string[];
@@ -89,6 +106,12 @@ export default function EditProductPage() {
         price: parseFloat(price),
         location,
         images: [...images, ...uploaded].filter(img => img.startsWith('http')),
+        shipping_weight: shippingWeight ? parseFloat(shippingWeight) : null,
+        shipping_height: shippingHeight ? parseInt(shippingHeight) : null,
+        shipping_width: shippingWidth ? parseInt(shippingWidth) : null,
+        shipping_length: shippingLength ? parseInt(shippingLength) : null,
+        local_pickup: localPickup,
+        free_shipping: freeShipping,
       };
 
       const res = await fetch(`/api/products?id=${id}`, {
@@ -164,6 +187,101 @@ export default function EditProductPage() {
               </div>
             )}
             <input type="file" accept="image/*" multiple onChange={onFiles} className="vintage-input w-full" />
+          </div>
+
+          {/* Dimensões de Envio */}
+          <div className="border-t border-[#E8DCC6] pt-4">
+            <h3 className="font-vintage-subtitle text-lg text-[#6B4C57] mb-3">📦 Informações de Envio</h3>
+            <p className="text-sm text-[#8B6F47] mb-4">
+              Preencha as dimensões para calcular o frete automaticamente. Se não preencher, apenas opções de retirada local estarão disponíveis.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Peso (kg) *
+                </label>
+                <input 
+                  type="number" 
+                  step="0.001" 
+                  placeholder="Ex: 0.5"
+                  className="vintage-input w-full" 
+                  value={shippingWeight} 
+                  onChange={e => setShippingWeight(e.target.value)} 
+                />
+              </div>
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Altura (cm) *
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Ex: 10"
+                  className="vintage-input w-full" 
+                  value={shippingHeight} 
+                  onChange={e => setShippingHeight(e.target.value)} 
+                />
+              </div>
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Largura (cm) *
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Ex: 15"
+                  className="vintage-input w-full" 
+                  value={shippingWidth} 
+                  onChange={e => setShippingWidth(e.target.value)} 
+                />
+              </div>
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Comprimento (cm) *
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Ex: 20"
+                  className="vintage-input w-full" 
+                  value={shippingLength} 
+                  onChange={e => setShippingLength(e.target.value)} 
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={localPickup} 
+                  onChange={e => setLocalPickup(e.target.checked)}
+                  className="w-4 h-4 text-[#8B6F47] border-[#E8DCC6] rounded focus:ring-[#8B6F47]"
+                />
+                <div>
+                  <span className="font-vintage-body text-[#3C3C3C]">Permitir retirada local</span>
+                  <p className="text-xs text-[#8B6F47]">Comprador pode retirar o produto pessoalmente</p>
+                </div>
+              </label>
+
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={freeShipping} 
+                  onChange={e => setFreeShipping(e.target.checked)}
+                  className="w-4 h-4 text-[#8B6F47] border-[#E8DCC6] rounded focus:ring-[#8B6F47]"
+                />
+                <div>
+                  <span className="font-vintage-body text-[#3C3C3C]">Frete grátis</span>
+                  <p className="text-xs text-[#8B6F47]">Você paga o frete para o comprador</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-800">
+                💡 <strong>Dica:</strong> Produtos com dimensões corretas têm mais chances de venda, 
+                pois permitem calcular frete para todo o Brasil com desconto de até 50% nos Correios.
+              </p>
+            </div>
           </div>
 
           <div className="flex justify-end">

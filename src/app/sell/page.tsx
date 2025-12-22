@@ -21,6 +21,12 @@ interface ProductForm {
   location: string;
   tags: string[];
   images: File[];
+  shipping_weight?: string;
+  shipping_height?: string;
+  shipping_width?: string;
+  shipping_length?: string;
+  local_pickup?: boolean;
+  free_shipping?: boolean;
 }
 
 export default function SellPage() {
@@ -159,7 +165,13 @@ export default function SellPage() {
         seller_id: session?.user?.id || 'temp-user-id', // TODO: Pegar ID real do usuário logado
         images: imageUrls,
         location: form.location,
-        tags: form.tags
+        tags: form.tags,
+        shipping_weight: form.shipping_weight ? parseFloat(form.shipping_weight) : null,
+        shipping_height: form.shipping_height ? parseInt(form.shipping_height) : null,
+        shipping_width: form.shipping_width ? parseInt(form.shipping_width) : null,
+        shipping_length: form.shipping_length ? parseInt(form.shipping_length) : null,
+        local_pickup: form.local_pickup || false,
+        free_shipping: form.free_shipping || false,
       };
 
       const response = await fetch('/api/products', {
@@ -400,6 +412,99 @@ export default function SellPage() {
             )}
           </div>
 
+          {/* Informações de Envio */}
+          <div className="vintage-card p-6">
+            <h2 className="font-vintage-subtitle text-xl mb-4" style={{ color: '#6B4C57' }}>
+              📦 Informações de Envio (Opcional)
+            </h2>
+            <p className="text-sm text-[#8B6F47] mb-4 font-vintage-body">
+              Preencha as dimensões para que os compradores possam calcular o frete automaticamente. 
+              Se não preencher, apenas opções de retirada local estarão disponíveis.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Peso (kg)
+                </label>
+                <input 
+                  type="number" 
+                  step="0.001" 
+                  placeholder="Ex: 0.5"
+                  className="vintage-input w-full" 
+                  onChange={(e) => setForm({ ...form, shipping_weight: e.target.value })}
+                />
+                <p className="text-xs text-[#8B6F47] mt-1">Peso do produto embalado</p>
+              </div>
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Altura (cm)
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Ex: 10"
+                  className="vintage-input w-full" 
+                  onChange={(e) => setForm({ ...form, shipping_height: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Largura (cm)
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Ex: 15"
+                  className="vintage-input w-full" 
+                  onChange={(e) => setForm({ ...form, shipping_width: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block font-vintage-body text-sm text-[#6B4C57] mb-1">
+                  Comprimento (cm)
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Ex: 20"
+                  className="vintage-input w-full" 
+                  onChange={(e) => setForm({ ...form, shipping_length: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  onChange={(e) => setForm({ ...form, local_pickup: e.target.checked })}
+                  className="w-4 h-4 text-[#8B6F47] border-[#E8DCC6] rounded focus:ring-[#8B6F47]"
+                />
+                <div>
+                  <span className="font-vintage-body text-[#3C3C3C]">Permitir retirada local</span>
+                  <p className="text-xs text-[#8B6F47]">Comprador pode retirar o produto pessoalmente</p>
+                </div>
+              </label>
+
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  onChange={(e) => setForm({ ...form, free_shipping: e.target.checked })}
+                  className="w-4 h-4 text-[#8B6F47] border-[#E8DCC6] rounded focus:ring-[#8B6F47]"
+                />
+                <div>
+                  <span className="font-vintage-body text-[#3C3C3C]">Frete grátis</span>
+                  <p className="text-xs text-[#8B6F47]">Você paga o frete para o comprador</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-800 font-vintage-body">
+                💡 <strong>Dica:</strong> Produtos com dimensões corretas têm mais chances de venda, 
+                pois permitem calcular frete para todo o Brasil com desconto de até 50% nos Correios via Melhor Envio.
+              </p>
+            </div>
+          </div>
+
           {/* Tags */}
           <div className="vintage-card p-6">
             <h2 className="font-vintage-subtitle text-xl mb-4" style={{ color: '#6B4C57' }}>
@@ -429,7 +534,12 @@ export default function SellPage() {
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
                 className="vintage-input flex-1"
                 placeholder="Digite uma tag e pressione Enter"
                 maxLength={20}

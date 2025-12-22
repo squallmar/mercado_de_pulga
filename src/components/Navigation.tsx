@@ -3,9 +3,12 @@
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '@/i18n/I18nProvider';
+import LanguageCurrencySwitcher from './LanguageCurrencySwitcher';
 
 export default function Navigation() {
   const { data: session, status } = useSession();
+  const { t } = useI18n();
   // Separate states for desktop user dropdown and mobile menu
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -46,7 +49,7 @@ export default function Navigation() {
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-2xl">🏷️</span>
               <span className="font-vintage-title text-xl" style={{ color: '#8B6F47' }}>
-                MERCADO DE PULGA
+                {t('brand.title')}
               </span>
             </Link>
           </div>
@@ -56,7 +59,7 @@ export default function Navigation() {
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Buscar tesouros..."
+                placeholder={t('nav.search.placeholder')}
                 className="vintage-input w-full pr-4 py-2"
                 style={{ paddingLeft: '2.75rem' }}
               />
@@ -75,7 +78,7 @@ export default function Navigation() {
               className="font-vintage-subtitle transition-colors hover:scale-105"
               style={{ color: '#6B4C57' }}
             >
-              Explorar
+              {t('nav.explore')}
             </Link>
             
             <Link 
@@ -83,8 +86,11 @@ export default function Navigation() {
               className="font-vintage-subtitle transition-colors hover:scale-105"
               style={{ color: '#6B4C57' }}
             >
-              Categorias
+              {t('nav.categories')}
             </Link>
+
+            {/* Language & Currency Switcher */}
+            <LanguageCurrencySwitcher />
 
             {status === 'loading' ? (
               <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: '#E8DCC6' }}></div>
@@ -94,7 +100,7 @@ export default function Navigation() {
                   href="/sell" 
                   className="vintage-button px-4 py-2 text-sm"
                 >
-                  Vender
+                  {t('nav.sell')}
                 </Link>
                 
                 <div className="relative" ref={userMenuRef}>
@@ -136,7 +142,7 @@ export default function Navigation() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Meu Perfil
+                        {t('nav.profile')}
                       </Link>
                       
                       <Link 
@@ -144,7 +150,7 @@ export default function Navigation() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Meus Produtos
+                        {t('nav.myProducts')}
                       </Link>
                       
                       <Link 
@@ -152,7 +158,7 @@ export default function Navigation() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Favoritos
+                        {t('nav.favorites')}
                       </Link>
                       
                       <Link 
@@ -160,7 +166,7 @@ export default function Navigation() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        Mensagens
+                        {t('nav.messages')}
                       </Link>
                       
                       {session.user?.email === 'admin@mercadodepulgas.com' && (
@@ -170,7 +176,7 @@ export default function Navigation() {
                           onClick={() => setIsUserMenuOpen(false)}
                           style={{ borderColor: '#E8DCC6' }}
                         >
-                          🔧 Admin
+                          🔧 {t('nav.admin')}
                         </Link>
                       )}
                       
@@ -178,7 +184,7 @@ export default function Navigation() {
                         onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t"
                       >
-                        Sair
+                        {t('nav.logout')}
                       </button>
                     </div>
                   )}
@@ -191,13 +197,13 @@ export default function Navigation() {
                   className="font-vintage-subtitle transition-colors hover:scale-105"
                   style={{ color: '#6B4C57' }}
                 >
-                  Entrar
+                  {t('nav.login')}
                 </Link>
                 <Link 
                   href="/auth/register" 
                   className="vintage-button px-4 py-2"
                 >
-                  Cadastrar
+                  {t('nav.register')}
                 </Link>
               </div>
             )}
@@ -227,7 +233,7 @@ export default function Navigation() {
                 style={{ color: '#6B4C57' }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Explorar Produtos
+                {t('nav.explore')} Produtos
               </Link>
               
               <Link 
@@ -236,7 +242,7 @@ export default function Navigation() {
                 style={{ color: '#6B4C57' }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Categorias
+                {t('nav.categories')}
               </Link>
 
               {session ? (
@@ -246,7 +252,7 @@ export default function Navigation() {
                     className="block px-4 py-2 vintage-button rounded mx-4 text-center"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Vender Produto
+                    {t('nav.sell')} Produto
                   </Link>
                   
                   <div className="mt-4 pt-4" style={{ borderTop: '1px solid #E8DCC6' }}>
@@ -260,7 +266,7 @@ export default function Navigation() {
                       style={{ color: '#6B4C57' }}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Meu Perfil
+                      {t('nav.profile')}
                     </Link>
                     
                     <Link 
@@ -269,7 +275,7 @@ export default function Navigation() {
                       style={{ color: '#6B4C57' }}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Meus Produtos
+                      {t('nav.myProducts')}
                     </Link>
                     
                     {session.user?.email === 'admin@mercadodepulgas.com' && (
@@ -278,7 +284,7 @@ export default function Navigation() {
                         className="block px-4 py-2 rounded font-vintage-body text-orange-600"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        🔧 Admin
+                        🔧 {t('nav.admin')}
                       </Link>
                     )}
                     
@@ -287,7 +293,7 @@ export default function Navigation() {
                       className="block w-full text-left px-4 py-2 rounded font-vintage-body"
                       style={{ color: '#6B4C57' }}
                     >
-                      Sair
+                      {t('nav.logout')}
                     </button>
                   </div>
                 </>
@@ -299,14 +305,14 @@ export default function Navigation() {
                     style={{ color: '#6B4C57' }}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Entrar
+                    {t('nav.login')}
                   </Link>
                   <Link 
                     href="/auth/register" 
                     className="block px-4 py-2 rounded mx-4 text-center vintage-button"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Cadastrar
+                    {t('nav.register')}
                   </Link>
                 </div>
               )}

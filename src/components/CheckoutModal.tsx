@@ -7,6 +7,20 @@ import Image from 'next/image';
 import { Product } from '@/types';
 import { isValidImageUrl } from '@/lib/utils';
 import { getCsrfToken } from '@/lib/csrf';
+import ShippingCalculator from './ShippingCalculator';
+
+interface ShippingOption {
+  id: string;
+  name: string;
+  price: number;
+  delivery_time: number;
+  company?: {
+    name: string;
+    picture: string;
+  };
+  method?: string;
+  description?: string;
+}
 
 interface CheckoutModalProps {
   product: Product;
@@ -20,12 +34,15 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'credit_card'>('pix');
   const [installments, setInstallments] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [showShippingCalc, setShowShippingCalc] = useState(false);
   // Stripe Checkout redireciona, não mantemos dados locais de pagamento
 
   if (!isOpen) return null;
 
   const platformFee = Math.round(product.price * 0.04 * 100) / 100;
-  const totalAmount = product.price;
+  const shippingCost = selectedShipping?.price || 0;
+  const totalAmount = product.price + shippingCost;
 
   const handlePayment = async () => {
     if (!session) {
@@ -66,28 +83,30 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
   // Não há render específico para PIX via Stripe (Checkout redireciona)
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="vintage-card max-w-md w-full p-6">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div
+        className="vintage-card w-[96%] sm:w-full max-w-sm sm:max-w-md md:max-w-lg p-4 sm:p-6 max-h-[88vh] overflow-y-auto rounded-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Finalizar Compra"
+      >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="font-vintage-title text-xl" style={{ color: '#6B4C57' }}>
+          <h2 className="font-vintage-title text-lg sm:text-xl" style={{ color: '#6B4C57' }}>
             Finalizar Compra
           </h2>
           <button
             onClick={onClose}
-            className="text-[#6B4C57] hover:text-[#8B6F47] text-xl"
+            className="text-[#6B4C57] hover:text-[#8B6F47] text-lg sm:text-xl"
           >
             ✕
           </button>
         </div>
 
         {/* Resumo do produto */}
-        <div className="border-b border-[#E8DCC6] pb-4 mb-4">
-          <div className="flex space-x-3">
-            <div className="w-16 h-16 bg-[#E8DCC6] rounded-lg flex-shrink-0 overflow-hidden relative">
+        <div className="border-b border-[#E8DCC6] pb-3 sm:pb-4 mb-3 sm:mb-4">
+          <div className="flex gap-3">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#E8DCC6] rounded-lg flex-shrink-0 overflow-hidden relative">
               {(() => {
-                // Debug: verificar estrutura das imagens
-                console.log('Product images:', product.images, 'Type:', typeof product.images);
-                
                 // Verificar se images é um array e buscar uma imagem válida
                 let images: string[] = [];
                 if (typeof product.images === 'string') {
@@ -101,19 +120,14 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
                 }
                 
                 const validImage = images.find(img => img && isValidImageUrl(img));
-                console.log('Valid image found:', validImage);
                 
                 return validImage ? (
                   <Image 
                     src={validImage} 
                     alt={product.title}
                     fill
-                    sizes="64px"
+                    sizes="56px"
                     className="object-cover rounded-lg"
-                    onError={(e) => {
-                      console.error('Erro ao carregar imagem:', validImage);
-                      e.currentTarget.style.display = 'none';
-                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -123,7 +137,7 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
               })()}
             </div>
             <div className="flex-1">
-              <h3 className="font-vintage-subtitle text-sm text-[#3C3C3C]">
+              <h3 className="font-vintage-subtitle text-sm sm:text-base text-[#3C3C3C] line-clamp-2">
                 {product.title}
               </h3>
               <p className="font-vintage-body text-xs text-[#6B4C57]">
@@ -131,6 +145,33 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Calculadora de Frete (colapsável para telas pequenas) */}
+        <div className="mb-3 sm:mb-4">
+          <button
+            type="button"
+            onClick={() => setShowShippingCalc((v) => !v)}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-[#E8DCC6] hover:bg-[#F5F1E8] transition-colors"
+          >
+            <span className="font-vintage-subtitle text-sm" style={{ color: '#6B4C57' }}>
+              {showShippingCalc ? 'Ocultar opções de frete' : 'Calcular frete'}
+            </span>
+            <span className="text-[#8B6F47]">{showShippingCalc ? '▲' : '▼'}</span>
+          </button>
+
+          {showShippingCalc && (
+            <div className="mt-3">
+              <ShippingCalculator 
+                productId={product.id.toString()} 
+                onSelectShipping={(opt) => {
+                  setSelectedShipping(opt);
+                  // Ao selecionar, recolhe em telas pequenas
+                  if (window.innerWidth < 640) setShowShippingCalc(false);
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Resumo financeiro */}
@@ -141,6 +182,17 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
               R$ {product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </div>
+          {selectedShipping && (
+            <div className="flex justify-between">
+              <span className="font-vintage-body text-[#6B4C57]">Frete ({selectedShipping.name}):</span>
+              <span className="font-vintage-body text-[#6B4C57]">
+                {selectedShipping.price === 0 
+                  ? 'GRÁTIS' 
+                  : `R$ ${selectedShipping.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                }
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="font-vintage-body text-[#6B4C57]">Taxa de proteção da transação:</span>
             <span className="font-vintage-body text-[#6B4C57]">
@@ -159,7 +211,7 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
         </div>
 
         {/* Métodos de pagamento */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-4 sm:mb-6">
           <h3 className="font-vintage-subtitle text-sm" style={{ color: '#6B4C57' }}>
             Método de Pagamento
           </h3>
@@ -226,7 +278,7 @@ export default function CheckoutModal({ product, isOpen, onClose }: CheckoutModa
         </div>
 
         {/* Botões */}
-        <div className="space-y-2">
+        <div className="space-y-2 sticky bottom-0 bg-white/80 pt-2 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <button
             onClick={handlePayment}
             disabled={loading}
