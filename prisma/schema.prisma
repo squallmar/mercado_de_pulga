@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// MODELOS
+
+model User {
+  id              String        @id @default(uuid()) @db.Uuid
+  email           String        @unique
+  name            String?
+  password        String
+  // Relações
+  buyerTransactions  Transaction[] @relation("BuyerTransactions")
+  sellerTransactions Transaction[] @relation("SellerTransactions")
+  openedDisputes     Dispute[]     @relation("OpenedDisputes")
+  products           Product[]
+  // Timestamps
+  createdAt       DateTime      @default(now()) @map("created_at")
+  
+  @@map("users")
+}
+
+model Product {
+  id              String        @id @default(uuid()) @db.Uuid
+  title           String
+  description     String?
+  price           Float
+  userId          String        @db.Uuid
+  user            User          @relation(fields: [userId], references: [id])
+  // Relações
+  transactions    Transaction[]
+  // Timestamps
+  createdAt       DateTime      @default(now()) @map("created_at")
+  
+  @@map("products")
+}
+
+model Transaction {
+  id                      String        @id @default(uuid()) @db.Uuid
+  productId               String        @db.Uuid @map("product_id")
+  buyerId                 String        @db.Uuid @map("buyer_id")
+  sellerId                String        @db.Uuid @map("seller_id")
+  amount                  Float         @db.Decimal(10, 2)
+  platformFee             Float         @db.Decimal(10, 2) @map("platform_fee")
+  sellerAmount            Float         @db.Decimal(10, 2) @map("seller_amount")
+  paymentMethod           String        @map("payment_method")
+  paymentProvider         String        @map("payment_provider")
+  providerTransactionId   String?       @map("provider_transaction_id")
+  status                  String        @default("pending")
+  // Relações
+  product                 Product       @relation(fields: [productId], references: [id])
+  buyer                   User          @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  seller                  User          @relation("SellerTransactions", fields: [sellerId], references: [id])
+  payment                 Payment?
+  disputes                Dispute[]
+  // Timestamps
+  createdAt               DateTime      @default(now()) @map("created_at")
+  updatedAt               DateTime      @updatedAt @map("updated_at")
+  
+  @@map("transactions")
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([productId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                  String        @id @default(uuid()) @db.Uuid
+  transactionId       String        @db.Uuid @unique @map("transaction_id")
+  amount              Float         @db.Decimal(10, 2)
+  currency            String        @default("BRL")
+  paymentMethodDetails Json         @map("payment_method_details") @db.JsonB
+  providerResponse    Json          @map("provider_response") @db.JsonB
+  // Relações
+  transaction         Transaction   @relation(fields: [transactionId], references: [id])
+  webhookEvents       WebhookEvent[]
+  // Timestamps
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  
+  @@map("payments")
+  @@index([transactionId])
+}
+
+model WebhookEvent {
+  id                  String        @id @default(uuid()) @db.Uuid
+  paymentId           String        @map("payment_id")
+  eventType           String        @map("event_type")
+  provider            String
+  payload             Json          @db.JsonB
+  processed           Boolean       @default(false)
+  // Relações
+  payment             Payment?      @relation(fields: [paymentId], references: [id])
+  // Timestamps
+  createdAt           DateTime      @default(now()) @map("created_at")
+  
+  @@map("webhook_events")
+  @@index([paymentId])
+  @@index([processed])
+}
+
+model Dispute {
+  id                  String        @id @default(uuid()) @db.Uuid
+  transactionId       String        @db.Uuid @map("transaction_id")
+  reason              String
+  description         String
+  openedById          String        @db.Uuid @map("opened_by_id")
+  status              String        @default("open")
+  resolution          String?
+  // Relações
+  transaction         Transaction   @relation(fields: [transactionId], references: [id])
+  openedBy            User          @relation("OpenedDisputes", fields: [openedById], references: [id])
+  // Timestamps
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  
+  @@map("disputes")
+  @@index([transactionId])
+  @@index([status])
+}
+
+// ENUMS para campos com valores fixos
+enum PaymentMethod {
+  pix
+  credit_card
+  debit_card
+  boleto
+}
+
+enum PaymentProvider {
+  mercadopago
+  stripe
+  pagseguro
+}
+
+enum TransactionStatus {
+  pending
+  processing
+  paid
+  released
+  refunded
+  failed
+}
+
+enum DisputeReason {
+  item_not_received
+  item_not_as_described
+  payment_issue
+  other
+}
+
+enum DisputeStatus {
+  open
+  investigating
+  resolved
+  closed
+}
+
+enum DisputeResolution {
+  refund_buyer
+  release_to_seller
+  partial_refund
+}
