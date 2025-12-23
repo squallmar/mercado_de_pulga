@@ -1,33 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Cloudinary
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        port: '',
-        pathname: '/**',
       },
     ],
   },
   
-  // REMOVA COMPLETAMENTE a função headers() por 24h
-  // Isso fará seu site funcionar IMEDIATAMENTE
-  
-  // Para resolver React hydration errors:
+  // Desativar temporariamente para resolver hydration errors
   reactStrictMode: false,
   
-  // Para resolver WebSocket errors:
+  // Webpack config para evitar erros de módulos
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
         fs: false,
         net: false,
         tls: false,
+        child_process: false,
       };
     }
     return config;
   },
+  
+  // NÃO TEM headers() - SEM CSP por 24h
 };
 
 module.exports = nextConfig;
