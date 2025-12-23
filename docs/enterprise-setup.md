@@ -48,7 +48,7 @@ Este guia fornece instruções para configuração e deploy enterprise do Mercad
 ```bash
 NODE_ENV=development
 DATABASE_URL=postgresql://localhost:5432/mercadodepulgas
-NEXTAUTH_SECRET=PJO/wybOWkV0cKpXeAePTnrb5DdfVRY/STZjU5EOxhs=
+NEXTAUTH_SECRET=dev-secret-change-in-production
 NEXTAUTH_URL=http://localhost:3000
 
 # Cloudinary
@@ -70,7 +70,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 ```bash
 NODE_ENV=production
 DATABASE_URL=postgresql://prod-user:***@prod-host:5432/mercadopulgas_prod
-NEXTAUTH_SECRET=PJO/wybOWkV0cKpXeAePTnrb5DdfVRY/STZjU5EOxhs=
+NEXTAUTH_SECRET=***-secure-random-32+-chars-***
 NEXTAUTH_URL=https://mercadodepulgas.com.br
 
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=prod-cloud
