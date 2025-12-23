@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // REMOVIDO: url = env("DATABASE_URL") - Agora está no prisma.config.ts
+  url      = env("DATABASE_URL")
 }
 
 // MODELOS
@@ -87,9 +87,9 @@ model Transaction {
   productId               String        @db.Uuid @map("product_id")
   buyerId                 String        @db.Uuid @map("buyer_id")
   sellerId                String        @db.Uuid @map("seller_id")
-  amount                  Float         @db.Decimal(10, 2)
-  platformFee             Float         @db.Decimal(10, 2) @map("platform_fee")
-  sellerAmount            Float         @db.Decimal(10, 2) @map("seller_amount")
+  amount                  Decimal       @db.Decimal(10, 2)  // ✅ CORRIGIDO: Float → Decimal
+  platformFee             Decimal       @db.Decimal(10, 2) @map("platform_fee")  // ✅ CORRIGIDO
+  sellerAmount            Decimal       @db.Decimal(10, 2) @map("seller_amount")  // ✅ CORRIGIDO
   paymentMethod           String        @map("payment_method")
   paymentProvider         String        @map("payment_provider")
   providerTransactionId   String?       @map("provider_transaction_id")
@@ -115,7 +115,7 @@ model Transaction {
 model Payment {
   id                  String        @id @default(uuid()) @db.Uuid
   transactionId       String        @db.Uuid @unique @map("transaction_id")
-  amount              Float         @db.Decimal(10, 2)
+  amount              Decimal       @db.Decimal(10, 2)  // ✅ CORRIGIDO: Float → Decimal
   currency            String        @default("BRL")
   paymentMethodDetails Json         @map("payment_method_details") @db.JsonB
   providerResponse    Json          @map("provider_response") @db.JsonB
@@ -132,7 +132,7 @@ model Payment {
 
 model WebhookEvent {
   id                  String        @id @default(uuid()) @db.Uuid
-  paymentId           String        @map("payment_id")
+  paymentId           String        @map("payment_id") @db.Uuid
   eventType           String        @map("event_type")
   provider            String
   payload             Json          @db.JsonB
